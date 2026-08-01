@@ -1,0 +1,546 @@
+Hãy tạo bộ script SQL để kiểm thử tool compare database với yêu cầu sau.
+
+## 1. Mục tiêu
+
+Tạo cùng một bảng có tên:
+
+```text
+compare_test
+```
+
+trên hai môi trường `crbt16m` và `crbt21m`.
+
+Hai bảng cần có các trường hợp giống nhau và khác nhau có chủ đích để kiểm thử khả năng phát hiện khác biệt của tool.
+
+Hãy tạo kết quả thành hai file SQL độc lập:
+
+```text
+01_crbt16m.sql
+02_crbt21m.sql
+```
+
+Mỗi file phải có thể chạy độc lập trên đúng môi trường tương ứng.
+
+## 2. Yêu cầu chung
+
+Mỗi script cần:
+
+1. Xóa bảng cũ nếu bảng đã tồn tại.
+2. Tạo lại bảng.
+3. Tạo primary key.
+4. Tạo unique constraint.
+5. Tạo foreign key nếu cần.
+6. Tạo index.
+7. Thêm comment cho bảng và các cột nếu hệ quản trị database hỗ trợ.
+8. Insert dữ liệu kiểm thử.
+9. Có transaction nếu hệ quản trị database hỗ trợ.
+10. Không sử dụng dữ liệu ngẫu nhiên khiến kết quả thay đổi giữa các lần chạy.
+11. Script phải có tính idempotent, có thể chạy lại nhiều lần.
+12. Mỗi nhóm dữ liệu phải có comment mô tả test case.
+
+## 3. Cấu trúc cơ bản của bảng
+
+Bảng `compare_test` cần chứa các kiểu dữ liệu phổ biến:
+
+```text
+id                  số nguyên, primary key
+business_code       chuỗi, unique
+full_name           chuỗi Unicode
+email               chuỗi
+age                  số nguyên
+salary               số thập phân
+account_balance      số thập phân có giá trị âm và dương
+status               chuỗi hoặc enum
+is_active            boolean
+description          text dài
+birth_date           date
+created_at           datetime hoặc timestamp
+updated_at           datetime hoặc timestamp, có thể null
+binary_data          binary/blob, có thể null
+json_data            JSON nếu database hỗ trợ, nếu không dùng text
+nullable_value       chuỗi, cho phép null
+version_number       số nguyên
+```
+
+## 4. Các test case về cấu trúc bảng
+
+Tạo khác biệt có chủ đích giữa hai môi trường để kiểm thử các trường hợp sau.
+
+### Case S01: Giống hoàn toàn
+
+Một số cột phải giống hoàn toàn về:
+
+* Tên cột
+* Kiểu dữ liệu
+* Độ dài
+* Nullable
+* Default value
+* Comment
+
+Ví dụ:
+
+```text
+id
+business_code
+full_name
+created_at
+```
+
+### Case S02: Thiếu cột
+
+`crbt16m` có cột:
+
+```text
+source_only_column
+```
+
+nhưng `crbt21m` không có.
+
+`crbt21m` có cột:
+
+```text
+target_only_column
+```
+
+nhưng `crbt16m` không có.
+
+### Case S03: Khác kiểu dữ liệu
+
+Cột `age`:
+
+* `crbt16m`: kiểu integer
+* `crbt21m`: kiểu varchar có thể chứa số
+
+### Case S04: Khác độ dài chuỗi
+
+Cột `email`:
+
+* `crbt16m`: varchar(100)
+* `crbt21m`: varchar(255)
+
+### Case S05: Khác precision và scale
+
+Cột `salary`:
+
+* `crbt16m`: decimal(15,2)
+* `crbt21m`: decimal(18,4)
+
+### Case S06: Khác nullable
+
+Cột `description`:
+
+* `crbt16m`: cho phép null
+* `crbt21m`: không cho phép null và có default phù hợp
+
+### Case S07: Khác default value
+
+Cột `status`:
+
+* `crbt16m`: default là `ACTIVE`
+* `crbt21m`: default là `PENDING`
+
+### Case S08: Khác tên cột
+
+Tạo hai cột có ý nghĩa tương đương nhưng khác tên:
+
+* `crbt16m`: `phone_number`
+* `crbt21m`: `mobile_number`
+
+### Case S09: Khác thứ tự cột
+
+Đặt một số cột có cùng tên nhưng khác vị trí giữa hai bảng.
+
+### Case S10: Khác primary key
+
+Nếu database cho phép:
+
+* `crbt16m`: primary key chỉ gồm `id`
+* `crbt21m`: vẫn giữ khả năng insert thuận tiện nhưng tạo khác biệt khóa để tool có thể phát hiện.
+
+Nếu thay đổi primary key gây khó khăn cho dữ liệu kiểm thử, hãy tạo một bảng phụ để kiểm thử composite primary key.
+
+### Case S11: Khác unique constraint
+
+* `crbt16m`: unique trên `business_code`
+* `crbt21m`: unique trên tổ hợp `business_code` và `status`
+
+### Case S12: Khác index
+
+Tạo các trường hợp:
+
+* Index chỉ có ở source
+* Index chỉ có ở target
+* Index cùng tên nhưng khác danh sách cột
+* Index có cùng cột nhưng khác thứ tự cột
+* Unique index và non-unique index
+
+### Case S13: Khác comment
+
+Cột `full_name` có comment khác nhau giữa hai môi trường.
+
+### Case S14: Khác check constraint
+
+Cột `account_balance`:
+
+* `crbt16m`: cho phép giá trị từ `-1000000` trở lên
+* `crbt21m`: chỉ cho phép giá trị từ `0` trở lên
+
+Không insert dữ liệu vi phạm constraint vào script chính.
+
+### Case S15: Khác kiểu timestamp
+
+Tạo khác biệt phù hợp với hệ quản trị database về:
+
+* Timestamp có hoặc không có timezone
+* Precision của timestamp
+* Default current timestamp
+* Cơ chế tự động cập nhật `updated_at`
+
+Chỉ sử dụng tính năng được hệ quản trị database hỗ trợ.
+
+## 5. Các test case về dữ liệu
+
+Insert dữ liệu để kiểm thử các trường hợp sau.
+
+### Case D01: Bản ghi giống hoàn toàn
+
+Một số dòng phải giống hoàn toàn ở cả hai môi trường.
+
+Ví dụ ID:
+
+```text
+1
+2
+```
+
+### Case D02: Chỉ tồn tại ở source
+
+Các dòng có ID:
+
+```text
+101
+102
+```
+
+chỉ tồn tại trong `crbt16m`.
+
+### Case D03: Chỉ tồn tại ở target
+
+Các dòng có ID:
+
+```text
+201
+202
+```
+
+chỉ tồn tại trong `crbt21m`.
+
+### Case D04: Cùng primary key nhưng khác một cột
+
+Tạo dòng cùng `id` nhưng khác `full_name`.
+
+### Case D05: Khác nhiều cột
+
+Tạo dòng cùng `id` nhưng khác:
+
+* email
+* salary
+* status
+* is_active
+* updated_at
+
+### Case D06: Null và chuỗi rỗng
+
+Cùng một dòng:
+
+* `crbt16m`: `nullable_value` là NULL
+* `crbt21m`: `nullable_value` là chuỗi rỗng
+
+### Case D07: Khoảng trắng
+
+Tạo khác biệt:
+
+```text
+"Test Value"
+"Test Value "
+```
+
+Bao gồm khoảng trắng cuối chuỗi để kiểm tra tool có trim dữ liệu hay không.
+
+### Case D08: Phân biệt chữ hoa và chữ thường
+
+Tạo khác biệt:
+
+```text
+"ACTIVE"
+"active"
+```
+
+### Case D09: Unicode và tiếng Việt
+
+Sử dụng dữ liệu:
+
+```text
+Nguyễn Văn An
+Trần Thị Hồng
+Đặng Minh Đức
+Công ty Cổ phần Công nghệ Việt Nam
+```
+
+Tạo ít nhất một dòng có khác biệt dấu tiếng Việt giữa hai môi trường.
+
+### Case D10: Ký tự đặc biệt
+
+Sử dụng các giá trị có:
+
+```text
+Dấu nháy đơn: O'Connor
+Dấu nháy kép
+Dấu xuống dòng
+Tab
+Ký tự &, <, >, /, \
+Emoji nếu database hỗ trợ: ✅ 🚀
+```
+
+Đảm bảo escape đúng cú pháp SQL.
+
+### Case D11: Số thập phân
+
+Tạo dữ liệu kiểm thử:
+
+```text
+0
+0.01
+-0.01
+999999.99
+123456789.1234
+```
+
+Điều chỉnh theo precision của từng môi trường và không tạo dữ liệu làm script thất bại.
+
+### Case D12: Date và timestamp
+
+Tạo các trường hợp:
+
+* Ngày bình thường
+* Ngày nhuận: `2024-02-29`
+* Timestamp có millisecond hoặc microsecond nếu hỗ trợ
+* `updated_at` là NULL
+* Hai timestamp khác nhau đúng một giây
+* Hai timestamp biểu diễn cùng thời điểm nhưng khác timezone nếu hệ quản trị hỗ trợ
+
+### Case D13: Boolean
+
+Kiểm thử các giá trị tương đương:
+
+```text
+true / false
+1 / 0
+```
+
+Sử dụng cú pháp đúng với hệ quản trị database.
+
+### Case D14: Text dài
+
+Tạo một bản ghi có `description` dài ít nhất 1.000 ký tự.
+
+Không dùng hàm sinh dữ liệu phụ thuộc database nếu làm script khó đọc. Có thể dùng chuỗi cố định hoặc hàm repeat phù hợp.
+
+### Case D15: JSON
+
+Tạo các trường hợp:
+
+1. JSON giống hoàn toàn.
+2. JSON khác giá trị.
+3. JSON có cùng nội dung nhưng khác thứ tự key.
+4. JSON có nested object.
+5. JSON có array.
+6. JSON là NULL.
+
+Ví dụ:
+
+```json
+{
+  "name": "Nguyễn Văn An",
+  "roles": ["ADMIN", "USER"],
+  "settings": {
+    "language": "vi",
+    "notification": true
+  }
+}
+```
+
+### Case D16: Binary
+
+Nếu database hỗ trợ, insert dữ liệu binary nhỏ và tạo:
+
+* Một dòng binary giống nhau.
+* Một dòng binary khác nhau.
+* Một dòng binary là NULL.
+
+### Case D17: Duplicate theo business key
+
+Không vi phạm unique constraint.
+
+Thay vào đó, tạo các dòng có:
+
+* business key gần giống nhau
+* khác chữ hoa/thường
+* có khoảng trắng đầu hoặc cuối
+
+Mục tiêu là kiểm tra cách tool chuẩn hóa business key.
+
+### Case D18: Giá trị biên
+
+Tạo dữ liệu gần giới hạn của:
+
+* Integer
+* Độ dài varchar
+* Decimal precision
+* Date
+* Text
+
+Không insert dữ liệu vượt giới hạn làm script bị lỗi.
+
+## 6. Bảng phụ phục vụ kiểm thử metadata
+
+Ngoài bảng `compare_test`, hãy tạo thêm các bảng sau nếu cần để tách riêng các test case khó triển khai trên một bảng.
+
+### Bảng `compare_test_parent`
+
+Dùng để kiểm thử:
+
+* Primary key
+* Dữ liệu cha
+* Foreign key
+
+### Bảng `compare_test_child`
+
+Dùng để kiểm thử:
+
+* Foreign key giống nhau
+* Foreign key chỉ có ở một môi trường
+* Khác tên foreign key
+* Khác hành động `ON DELETE`
+* Khác hành động `ON UPDATE`
+
+### Bảng `compare_test_composite_key`
+
+Dùng để kiểm thử:
+
+* Composite primary key
+* Khác thứ tự cột trong composite key
+* Composite unique constraint
+
+## 7. Quy tắc đặt dữ liệu
+
+Mỗi bản ghi cần có comment SQL ngay phía trên, ví dụ:
+
+```sql
+-- D01: Bản ghi giống hoàn toàn giữa hai môi trường
+INSERT INTO compare_test (...);
+
+-- D04: Cùng ID nhưng khác full_name
+INSERT INTO compare_test (...);
+```
+
+Sử dụng ID theo nhóm để dễ xác định test case:
+
+```text
+1-99: dữ liệu giống nhau
+100-199: chỉ có hoặc khác ở source
+200-299: chỉ có hoặc khác ở target
+300-399: khác giá trị đơn giản
+400-499: null, empty, whitespace và case-sensitive
+500-599: Unicode và ký tự đặc biệt
+600-699: number và decimal
+700-799: date và timestamp
+800-899: JSON, binary và text dài
+900-999: boundary value
+```
+
+## 8. Kết quả đầu ra
+
+Hãy trả về theo cấu trúc:
+
+### Phần 1: Ma trận test case
+
+Tạo bảng gồm các cột:
+
+```text
+Case ID
+Nhóm
+Mô tả
+crbt16m
+crbt21m
+Kết quả tool compare mong đợi
+```
+
+### Phần 2: Script cho crbt16m
+
+Trả về toàn bộ nội dung file:
+
+```text
+01_crbt16m.sql
+```
+
+### Phần 3: Script cho crbt21m
+
+Trả về toàn bộ nội dung file:
+
+```text
+02_crbt21m.sql
+```
+
+### Phần 4: Câu query kiểm tra
+
+Cung cấp query để kiểm tra:
+
+* Danh sách cột
+* Kiểu dữ liệu
+* Constraint
+* Primary key
+* Foreign key
+* Index
+* Số lượng bản ghi
+* Dữ liệu theo từng test case
+
+### Phần 5: Kết quả compare mong đợi
+
+Liệt kê rõ tool compare cần phát hiện:
+
+* Cột bị thiếu
+* Cột bị thừa
+* Kiểu dữ liệu khác
+* Độ dài khác
+* Nullable khác
+* Default khác
+* Constraint khác
+* Index khác
+* Bản ghi chỉ có ở source
+* Bản ghi chỉ có ở target
+* Bản ghi cùng key nhưng khác dữ liệu
+* NULL khác empty string
+* Khác whitespace
+* Khác chữ hoa/thường
+* Khác precision
+* Khác timestamp
+* JSON khác nội dung
+* JSON cùng nội dung nhưng khác thứ tự key
+
+## 9. Yêu cầu chất lượng
+
+Trước khi trả kết quả, hãy tự kiểm tra:
+
+1. Script có đúng cú pháp của hệ quản trị database được chỉ định không.
+2. Số lượng cột trong INSERT có khớp số lượng giá trị không.
+3. Dữ liệu có vi phạm primary key hoặc unique constraint không.
+4. Dữ liệu có vi phạm check constraint không.
+5. Foreign key có được tạo đúng thứ tự không.
+6. Script có thể chạy lại nhiều lần không.
+7. Hai script có đủ dữ liệu giống và khác để kiểm thử không.
+8. Mỗi khác biệt có Case ID rõ ràng không.
+9. Không tạo khác biệt ngoài danh sách mà không ghi chú.
+10. Kết quả mong đợi có thể dùng để viết automated test assertion không.
+
+Không chỉ giải thích cách làm. Hãy tạo đầy đủ hai script SQL hoàn chỉnh, có thể copy và chạy trực tiếp.

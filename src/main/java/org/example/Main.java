@@ -1,0 +1,133 @@
+package org.example;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.example.compare.DbComparator;
+import org.example.model.TableConfig;
+import org.example.utils.DbHelper;
+import org.example.utils.LoadConfig;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+public class Main {
+    private static final Logger logger = LogManager.getLogger(Main.class);
+
+    public static void main(String[] args) {
+        logger.info("Starting Compare DB application...");
+
+        LoadConfig config = new LoadConfig();
+        if (!config.isLoadedSuccessfully()) {
+            return;
+        }
+
+        int mode = config.getMode();
+        int batchSize = config.getBatchSize();
+
+        File outputDir = new File(config.getPathStatsFile());
+        if (!outputDir.exists()) {
+            boolean created = outputDir.mkdirs();
+            if (created) {
+                logger.info("Created result directory: {}", outputDir.getAbsolutePath());
+            }
+        }
+
+        String timestamp = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
+        String resultFileName = "result_" + timestamp + ".txt";
+        File resultFile = new File(outputDir, resultFileName);
+
+        // 2. Read tables list from tableList.txt
+        List<TableConfig> tableConfigs = new ArrayList<>();
+        File tableListFile = new File("tableList.txt");
+        if (!tableListFile.exists()) {
+            logger.error("tableList.txt file not found!");
+            return;
+        }
+
+        try (BufferedReader br = Files.newBufferedReader(tableListFile.toPath(), StandardCharsets.UTF_8)) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                try {
+                    TableConfig tblConfig = TableConfig.parse(line);
+                    if (tblConfig != null) {
+                        tableConfigs.add(tblConfig);
+                    }
+                } catch (IllegalArgumentException e) {
+                    logger.error("Skipped malformed line in tableList.txt: {}", e.getMessage());
+                }
+            }
+        } catch (IOException e) {
+            logger.error("Error reading tableList.txt file: ", e);
+            return;
+        }
+
+        if (tableConfigs.isEmpty()) {
+            logger.warn("Table list in tableList.txt is empty or contains no valid tables.");
+            return;
+        }
+
+        File cfgFile16M = new File("crbt16m/hibernate_mysql.cfg.xml");
+        File cfgFile21M = new File("crbt21m/hibernate_mysql.cfg.xml");
+
+        SessionFactory sf16M = null;
+        SessionFactory sf21M = null;
+        Session session16M = null;
+        Session session21M = null;
+
+        try {
+            logger.info("Connecting to database CRBT16M...");
+            sf16M = DbHelper.buildSessionFactory(cfgFile16M, null);
+            session16M = sf16M.openSession();
+
+            logger.info("Connecting to database CRBT21M...");
+            sf21M = DbHelper.buildSessionFactory(cfgFile21M, null);
+            session21M = sf21M.openSession();
+
+            logger.info("Starting comparison (Mode = {})...", mode);
+            List<String> report = DbComparator.compare(session16M, session21M, tableConfigs, mode, batchSize);
+
+            if (!report.isEmpty()) {
+                Files.write(resultFile.toPath(), report, StandardCharsets.UTF_8);
+                logger.info("Database validation results written successfully.");
+            }
+
+            System.out.println("PATH_STATISTICS_FILE: " + resultFile.getAbsolutePath());
+            logger.info("Result file path: {}", resultFile.getAbsolutePath());
+
+        } catch (Exception e) {
+            logger.error("An error occurred during comparison: ", e);
+            try {
+                List<String> errorReport = new ArrayList<>();
+                errorReport.add("Comparison process failed due to system error:");
+                errorReport.add(e.toString());
+                Files.write(resultFile.toPath(), errorReport, StandardCharsets.UTF_8);
+                System.out.println("PATH_STATISTICS_FILE: " + resultFile.getAbsolutePath());
+            } catch (IOException ex) {
+                logger.error("Unable to write error report file: ", ex);
+            }
+        } finally {
+            if (session16M != null) {
+                try { session16M.close(); } catch (Exception e) { logger.warn("Error closing session CRBT16M", e); }
+            }
+            if (session21M != null) {
+                try { session21M.close(); } catch (Exception e) { logger.warn("Error closing session CRBT21M", e); }
+            }
+            if (sf16M != null) {
+                try { sf16M.close(); } catch (Exception e) { logger.warn("Error closing SessionFactory CRBT16M", e); }
+            }
+            if (sf21M != null) {
+                try { sf21M.close(); } catch (Exception e) { logger.warn("Error closing SessionFactory CRBT21M", e); }
+            }
+            logger.info("All connection resources released. Program execution completed.");
+        }
+    }
+}

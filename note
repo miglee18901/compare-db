@@ -1,0 +1,50 @@
+Xây dung tool compare DB
+
+Cấu hình:
+    2 file hibernate_oracle.cfg.xml cấu hình DB
+    1 file config tên là config.properties:
+        - MODE (2 mode)
+        - PATH_STATISTICS_FILE: export kết quả chạy
+        - BATCH_SIZE: 1000
+    1 file lưu table lên file là tableList.txt, VD:
+        SUBS_INFO|MSISDN|ignoreColumn1,ignoreColumn2,...
+        PROD_SPEC|PROD_SPEC_ID|
+    
+    1 file cấu hình log, sử dung log4j2
+
+Luồng:
+    Đọc file cấu hình
+    Kết nối CSDL tạo 2 instance hibernate
+    Đọc từng dòng của tableList.txt (mặc định item[0] là tên bảng, item[1] là tên trường trong bảng dùng để làm key so sánh chỉ có duy nhất 1 trường ở chỉ mục này, item[2] là danh sách các trường bỏ qua không cần so sánh cách nhau bởi dấu ,), mỗi dòng thực hiện:
+        Split theo dấu "|" và validate size.
+        Dựa vào mode lưu trong file cấu hình thực hiện:
+            Mode 1 (mode so sánh chi tiết các trường):
+                Validate tham số item[0] có phải bảng ở cả 2 môi trường không, ... ? Nếu có lỗi thì ghi ra file result và đưa ra đường dẫn PATH_STATISTICS_FILE
+                Lấy metadata của bảng theo item[0]
+                validate item[1] có phải các trường trong bảng không, có phải primary key hay unique key không, ...? Nếu có lỗi thì ghi ra file result và đưa ra đường dẫn PATH_STATISTICS_FILE
+                validate item[2] có phải các trường trong bảng không, có trùng với item[1] không, ...? Nếu có lỗi thì ghi ra file result và đưa ra đường dẫn PATH_STATISTICS_FILE
+                Lấy danh sách các trường cần so sánh sau khi đã bỏ các trường ignore ở item[2], nếu trường hợp item[1] là unikey key thì thực hiện bỏ thêm trường primary key đi.
+                Đọc dữ liệu (order và query theo batch, lặp lại cho tới khi hết bản ghi), mỗi lần duyệt dữ liệu thực hiện:
+                    So sánh dữ liệu, theo từng bản ghi, theo từng cột đã lấy được ở bước trên
+                    
+                Sau khi đã duyệt hết dữ liệu thực hiện Ghi lỗi ra file txt theo dạng:
+                    TABLE = SUBS_INFO, CRBT16M = {}, CRBT21M = {}
+                    TABLE = PROD_SPEC, CRBT16M = {}, CRBT21M = {}
+
+                    COMPARE:
+                    TABLE = SUBS_INFO
+                    MSISDN key = 1
+                    TONE_CODE (CRBT16M) = {}, TONE_CODE (CRBT21M) = {}
+                    SINGER (CRBT16M) = {}, SINGER (CRBT21M) = {}
+
+                    MSISDN key = 2
+                    TONE_CODE (CRBT16M) = {}, TONE_CODE (CRBT21M) = {}
+                    SINGER (CRBT16M) = {}, SINGER (CRBT21M) = {}
+
+        Mode 2 (mode so sánh số lượng bản ghi):
+            Lấy metadata của bảng
+            Đếm dữ liệu và so sánh
+
+            Ghi lỗi ra file txt theo dạng:
+                TABLE = SUBS_INFO, CRBT16M = {}, CRBT21M = {}
+                TABLE = PROD_SPEC, CRBT16M = {}, CRBT21M = {}
