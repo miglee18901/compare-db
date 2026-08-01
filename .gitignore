@@ -33,6 +33,10 @@ build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 
+config.properties
+/crbt16m/
+/crbt21m/
+
 ### VS Code ###
 .vscode/
 
