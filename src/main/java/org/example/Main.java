@@ -21,6 +21,7 @@ import java.util.List;
 
 public class Main {
     private static final Logger logger = LogManager.getLogger(Main.class);
+    private static final File ETC_DIRECTORY = new File("etc");
 
     public static void main(String[] args) {
         logger.info("Starting Compare DB application...");
@@ -45,11 +46,11 @@ public class Main {
         String resultFileName = "result_" + timestamp + ".txt";
         File resultFile = new File(outputDir, resultFileName);
 
-        // 2. Read tables list from tableList.txt
+        // 2. Read tables list from etc/tableList.txt
         List<TableConfig> tableConfigs = new ArrayList<>();
-        File tableListFile = new File("tableList.txt");
+        File tableListFile = new File(ETC_DIRECTORY, "tableList.txt");
         if (!tableListFile.exists()) {
-            logger.error("tableList.txt file not found!");
+            logger.error("Configuration file not found: {}", tableListFile.getAbsolutePath());
             return;
         }
 
@@ -62,21 +63,21 @@ public class Main {
                         tableConfigs.add(tblConfig);
                     }
                 } catch (IllegalArgumentException e) {
-                    logger.error("Skipped malformed line in tableList.txt: {}", e.getMessage());
+                    logger.error("Skipped malformed line in {}: {}", tableListFile.getPath(), e.getMessage());
                 }
             }
         } catch (IOException e) {
-            logger.error("Error reading tableList.txt file: ", e);
+            logger.error("Error reading {}: ", tableListFile.getPath(), e);
             return;
         }
 
         if (tableConfigs.isEmpty()) {
-            logger.warn("Table list in tableList.txt is empty or contains no valid tables.");
+            logger.warn("Table list in {} is empty or contains no valid tables.", tableListFile.getPath());
             return;
         }
 
-        File cfgFile16M = new File("crbt16m/hibernate_mysql.cfg.xml");
-        File cfgFile21M = new File("crbt21m/hibernate_mysql.cfg.xml");
+        File cfgFile16M = new File(ETC_DIRECTORY, "crbt16m/hibernate_mysql.cfg.xml");
+        File cfgFile21M = new File(ETC_DIRECTORY, "crbt21m/hibernate_mysql.cfg.xml");
 
         SessionFactory sf16M = null;
         SessionFactory sf21M = null;

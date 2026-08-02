@@ -22,9 +22,9 @@ public class LoadConfig {
 
     private void load() {
         Properties props = new Properties();
-        File configFile = new File("config.properties");
+        File configFile = new File("etc", "config.properties");
         if (!configFile.exists()) {
-            logger.error("config.properties file not found in the working directory!");
+            logger.error("Configuration file not found: {}", configFile.getAbsolutePath());
             return;
         }
 
@@ -32,7 +32,7 @@ public class LoadConfig {
             props.load(fis);
             loadedSuccessfully = true;
         } catch (IOException e) {
-            logger.error("Error reading config.properties file: ", e);
+            logger.error("Error reading {}: ", configFile.getPath(), e);
             return;
         }
 

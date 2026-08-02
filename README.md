@@ -34,20 +34,15 @@ CompareDB/
 ├── src/test/java/                # Test JUnit 5
 ├── 01_crbt16m.sql                # SQL fixture cho môi trường thứ nhất
 ├── 02_crbt21m.sql                # SQL fixture cho môi trường thứ hai
-├── tableList.txt                 # Danh sách bảng cần so sánh
+├── etc/                          # Toàn bộ cấu hình runtime
+│   ├── config.properties
+│   ├── tableList.txt
+│   ├── crbt16m/hibernate_mysql.cfg.xml
+│   └── crbt21m/hibernate_mysql.cfg.xml
 └── pom.xml                       # Cấu hình Maven
 ```
 
-Khi chạy thực tế, cần tự tạo thêm các file/thư mục sau tại thư mục gốc project:
-
-```text
-config.properties
-crbt16m/hibernate_mysql.cfg.xml
-crbt21m/hibernate_mysql.cfg.xml
-result/
-```
-
-Ba file cấu hình có thể chứa thông tin nhạy cảm nên đã được loại khỏi Git bằng `.gitignore`.
+Repository cung cấp sẵn cấu trúc và giá trị mẫu trong `etc/`. Trước khi chạy, cần thay thông tin kết nối mẫu trong hai file Hibernate. Thư mục `result/` được ứng dụng tự tạo và không được đưa vào Git.
 
 ## Cài đặt
 
@@ -73,7 +68,7 @@ mvn -DskipTests package
 
 ## Cấu hình kết nối database
 
-Tạo file `crbt16m/hibernate_mysql.cfg.xml` cho môi trường thứ nhất và `crbt21m/hibernate_mysql.cfg.xml` cho môi trường thứ hai. Có thể dùng mẫu sau cho từng file rồi thay các giá trị tương ứng:
+Chỉnh file `etc/crbt16m/hibernate_mysql.cfg.xml` cho môi trường thứ nhất và `etc/crbt21m/hibernate_mysql.cfg.xml` cho môi trường thứ hai. Hai file đã có sẵn cấu trúc sau:
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -92,13 +87,13 @@ Tạo file `crbt16m/hibernate_mysql.cfg.xml` cho môi trường thứ nhất và
 </hibernate-configuration>
 ```
 
-Không commit hai file này. Nên dùng tài khoản chỉ có quyền đọc và không ghi mật khẩu thật vào tài liệu, log hoặc nội dung báo cáo.
+Hai file mẫu đang được Git theo dõi để project có đủ cấu trúc cấu hình. Không commit mật khẩu thật; trước khi tạo commit, luôn kiểm tra diff và thay thông tin nhạy cảm bằng giá trị mẫu. Nên dùng tài khoản chỉ có quyền đọc.
 
 Nếu cần tạo dữ liệu thử trên MySQL, có thể tham khảo hai fixture `01_crbt16m.sql` và `02_crbt21m.sql`. Hãy đọc nội dung SQL và xác nhận đúng database đích trước khi thực thi.
 
 ## Cấu hình chạy
 
-Tạo `config.properties` tại thư mục gốc:
+Chỉnh `etc/config.properties`:
 
 ```properties
 MODE=1
@@ -114,7 +109,7 @@ PATH_STATISTICS_FILE=result
 | `BATCH_SIZE` | Không | `1000` | Số bản ghi đọc trong mỗi batch. Nên dùng số nguyên dương. |
 | `PATH_STATISTICS_FILE` | Không | `.` | Thư mục chứa báo cáo. Ứng dụng sẽ tạo thư mục nếu chưa tồn tại. |
 
-File `config.properties` phải tồn tại thì chương trình mới khởi chạy. Giá trị mặc định chỉ được áp dụng khi thuộc tính tương ứng bị thiếu hoặc không hợp lệ.
+File `etc/config.properties` phải tồn tại thì chương trình mới khởi chạy. Giá trị mặc định chỉ được áp dụng khi thuộc tính tương ứng bị thiếu hoặc không hợp lệ.
 
 ### Chế độ 1: so sánh chi tiết
 
@@ -132,7 +127,7 @@ Với `MODE=2`, ứng dụng chỉ đếm số bản ghi của từng bảng t�
 
 ## Khai báo bảng cần so sánh
 
-Mỗi dòng hợp lệ trong `tableList.txt` có định dạng:
+Mỗi dòng hợp lệ trong `etc/tableList.txt` có định dạng:
 
 ```text
 TEN_BANG|COT_KHOA|COT_BO_QUA_1,COT_BO_QUA_2
@@ -158,14 +153,15 @@ Quy tắc:
 
 Cách thuận tiện nhất là mở project trong IntelliJ IDEA, chọn JDK 11, tải các dependency Maven, sau đó chạy class `org.example.Main`.
 
-Working directory phải là thư mục gốc repository, nơi chứa `config.properties` và `tableList.txt`. Trước khi chạy, cấu trúc tối thiểu cần có là:
+Working directory phải là thư mục gốc repository. Trước khi chạy, cấu trúc tối thiểu cần có là:
 
 ```text
 CompareDB/
-├── config.properties
-├── tableList.txt
-├── crbt16m/hibernate_mysql.cfg.xml
-└── crbt21m/hibernate_mysql.cfg.xml
+└── etc/
+    ├── config.properties
+    ├── tableList.txt
+    ├── crbt16m/hibernate_mysql.cfg.xml
+    └── crbt21m/hibernate_mysql.cfg.xml
 ```
 
 Trong quá trình chạy, log được in ra console. Khi hoàn tất, chương trình in đường dẫn báo cáo dưới dạng:
@@ -230,7 +226,7 @@ Artifact sau khi build nằm trong thư mục `target/`. POM hiện chưa cấu 
 
 ## Xử lý sự cố
 
-### Không tìm thấy `config.properties` hoặc `tableList.txt`
+### Không tìm thấy file cấu hình trong `etc/`
 
 Đảm bảo working directory là thư mục gốc repository và tên file đúng chính tả.
 
@@ -239,8 +235,8 @@ Artifact sau khi build nằm trong thư mục `target/`. POM hiện chưa cấu 
 Kiểm tra đủ hai đường dẫn cố định:
 
 ```text
-crbt16m/hibernate_mysql.cfg.xml
-crbt21m/hibernate_mysql.cfg.xml
+etc/crbt16m/hibernate_mysql.cfg.xml
+etc/crbt21m/hibernate_mysql.cfg.xml
 ```
 
 ### Không kết nối được MySQL
