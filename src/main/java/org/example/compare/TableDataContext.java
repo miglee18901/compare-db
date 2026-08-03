@@ -1,5 +1,6 @@
 package org.example.compare;
 
+import org.example.utils.DBUtils;
 import org.hibernate.Session;
 import java.util.ArrayList;
 import java.util.List;
@@ -46,7 +47,7 @@ public class TableDataContext {
     }
 
     private void fetchNextBatch() {
-        List<Object[]> batch = org.example.utils.DBUtils.fetchDataBatch(
+        List<Object[]> batch = DBUtils.fetchDataBatch(
             session, tableName, selectColumns, keyColumn, index, batchSize
         );
         currentBatch.clear();

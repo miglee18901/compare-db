@@ -10,13 +10,11 @@ public class ProcessUtils {
         String s1 = k1.toString().trim();
         String s2 = k2.toString().trim();
 
-        // Try numeric comparison first to align with database numeric sort order
         try {
             double d1 = Double.parseDouble(s1);
             double d2 = Double.parseDouble(s2);
             return Double.compare(d1, d2);
         } catch (NumberFormatException e) {
-            // Fallback to lexicographical comparison
             return s1.compareTo(s2);
         }
     }

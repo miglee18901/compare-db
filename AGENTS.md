@@ -4,7 +4,7 @@
 
 Đây là ứng dụng Maven Java 11 để so sánh hai môi trường MySQL. Mã nguồn chính nằm tại `src/main/java/org/example`: `Main.java` điều phối chương trình, `compare/` chứa logic so sánh, `model/` chứa cấu hình bảng đã phân tích, và `utils/` chứa tiện ích cấu hình và kết nối database. Cấu hình log nằm tại `src/main/resources/log4j2.xml`.
 
-File kết nối database là `crbt16m/hibernate_mysql.cfg.xml` và `crbt21m/hibernate_mysql.cfg.xml`. Khai báo bảng và khóa so sánh trong `tableList.txt`; cấu hình chạy nằm trong `config.properties`. SQL fixture là `01_crbt16m.sql` và `02_crbt21m.sql`. Test nằm tại `src/test/java/org/example/compare/`.
+File kết nối database là `etc/hibernate_mysql_crbt16m.cfg.xml` và `etc/hibernate_mysql_crbt21m.cfg.xml`. Khai báo bảng và khóa so sánh trong `tableList.txt`; cấu hình chạy nằm trong `etc/config.properties`. SQL fixture là `01_crbt16m.sql` và `02_crbt21m.sql`. Test nằm tại `src/test/java/org/example/compare/`.
 
 ## Lệnh Build, Test & Phát triển
 

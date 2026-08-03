@@ -1,5 +1,5 @@
 # CompareDB test fixture: main data comparison by primary key.
-compare_testxxxx|id
+compare_test|id
 
 # Supporting fixture tables with single-column primary keys.
 #compare_test_parent|parent_id

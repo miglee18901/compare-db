@@ -76,8 +76,8 @@ public class Main {
             return;
         }
 
-        File cfgFile16M = new File(ETC_DIRECTORY, "crbt16m/hibernate_mysql.cfg.xml");
-        File cfgFile21M = new File(ETC_DIRECTORY, "crbt21m/hibernate_mysql.cfg.xml");
+        File cfgFile16M = new File(ETC_DIRECTORY, "hibernate_mysql_crbt16m.cfg.xml");
+        File cfgFile21M = new File(ETC_DIRECTORY, "hibernate_mysql_crbt21m.cfg.xml");
 
         SessionFactory sf16M = null;
         SessionFactory sf21M = null;
@@ -117,16 +117,32 @@ public class Main {
             }
         } finally {
             if (session16M != null) {
-                try { session16M.close(); } catch (Exception e) { logger.warn("Error closing session CRBT16M", e); }
+                try {
+                    session16M.close();
+                } catch (Exception e) {
+                    logger.warn("Error closing session CRBT16M", e);
+                }
             }
             if (session21M != null) {
-                try { session21M.close(); } catch (Exception e) { logger.warn("Error closing session CRBT21M", e); }
+                try {
+                    session21M.close();
+                } catch (Exception e) {
+                    logger.warn("Error closing session CRBT21M", e);
+                }
             }
             if (sf16M != null) {
-                try { sf16M.close(); } catch (Exception e) { logger.warn("Error closing SessionFactory CRBT16M", e); }
+                try {
+                    sf16M.close();
+                } catch (Exception e) {
+                    logger.warn("Error closing SessionFactory CRBT16M", e);
+                }
             }
             if (sf21M != null) {
-                try { sf21M.close(); } catch (Exception e) { logger.warn("Error closing SessionFactory CRBT21M", e); }
+                try {
+                    sf21M.close();
+                } catch (Exception e) {
+                    logger.warn("Error closing SessionFactory CRBT21M", e);
+                }
             }
             logger.info("All connection resources released. Program execution completed.");
         }

@@ -13,7 +13,7 @@ public class LoadConfig {
 
     private int mode = 1;
     private int batchSize = 1000;
-    private String pathStatsFile = ".";
+    private String pathStatsFile = "./result/";
     private boolean loadedSuccessfully = false;
 
     public LoadConfig() {
@@ -36,21 +36,18 @@ public class LoadConfig {
             return;
         }
 
-        // Read Mode (defaults to 1)
         try {
             mode = Integer.parseInt(props.getProperty("MODE", "1").trim());
         } catch (NumberFormatException e) {
             logger.warn("Invalid MODE configuration value. Using default MODE = 1");
         }
 
-        // Read Batch Size (defaults to 1000)
         try {
             batchSize = Integer.parseInt(props.getProperty("BATCH_SIZE", "1000").trim());
         } catch (NumberFormatException e) {
             logger.warn("Invalid BATCH_SIZE configuration value. Using default BATCH_SIZE = 1000");
         }
 
-        // Read output path for results (defaults to ".")
         String pathVal = props.getProperty("PATH_STATISTICS_FILE");
         if (pathVal != null) {
             pathStatsFile = pathVal.trim();
