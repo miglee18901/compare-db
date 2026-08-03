@@ -45,6 +45,12 @@
             <version>5.1.49</version>
         </dependency>
 
+        <!-- Connection pool selected by the Hibernate configuration files. -->
+        <dependency>
+            <groupId>c3p0</groupId>
+            <artifactId>c3p0</artifactId>
+            <version>0.9.0</version>
+        </dependency>
         <!-- Log4j2 API and Core -->
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>

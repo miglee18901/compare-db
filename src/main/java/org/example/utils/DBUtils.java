@@ -66,9 +66,6 @@ public class DBUtils {
             if (schema == null || schema.isEmpty()) {
                 schema = connection.getSchema();
             }
-            if (schema != null) {
-                schema = schema.toUpperCase();
-            }
 
             String inputUpper = inputTableName.trim().toUpperCase();
             findTable(databaseMetadata, schema, null, inputUpper, metadata);
