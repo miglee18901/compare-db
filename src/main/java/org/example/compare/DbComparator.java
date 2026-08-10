@@ -31,7 +31,7 @@ public class DbComparator {
                     hasError = true;
                 }
                 if (hasError) {
-                    logger.warn("Table {} does not exist in one of the environments. Skipping comparison for this table.", config.getTableName());
+                    logger.error("Table {} does not exist in one of the environments. Skipping comparison for this table.", config.getTableName());
                     continue;
                 }
 
@@ -67,7 +67,7 @@ public class DbComparator {
                 }
 
                 if (hasError) {
-                    logger.warn("Table configuration for {} violates validation. Skipping comparison for this table.", config.getTableName());
+                    logger.error("Table configuration for {} violates validation. Skipping comparison for this table.", config.getTableName());
                     continue;
                 }
 

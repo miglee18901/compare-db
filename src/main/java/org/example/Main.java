@@ -72,7 +72,7 @@ public class Main {
         }
 
         if (tableConfigs.isEmpty()) {
-            logger.warn("Table list in {} is empty or contains no valid tables.", tableListFile.getPath());
+            logger.error("Table list in {} is empty or contains no valid tables.", tableListFile.getPath());
             return;
         }
 
@@ -120,28 +120,28 @@ public class Main {
                 try {
                     session16M.close();
                 } catch (Exception e) {
-                    logger.warn("Error closing session CRBT16M", e);
+                    logger.error("Error closing session CRBT16M", e);
                 }
             }
             if (session21M != null) {
                 try {
                     session21M.close();
                 } catch (Exception e) {
-                    logger.warn("Error closing session CRBT21M", e);
+                    logger.error("Error closing session CRBT21M", e);
                 }
             }
             if (sf16M != null) {
                 try {
                     sf16M.close();
                 } catch (Exception e) {
-                    logger.warn("Error closing SessionFactory CRBT16M", e);
+                    logger.error("Error closing SessionFactory CRBT16M", e);
                 }
             }
             if (sf21M != null) {
                 try {
                     sf21M.close();
                 } catch (Exception e) {
-                    logger.warn("Error closing SessionFactory CRBT21M", e);
+                    logger.error("Error closing SessionFactory CRBT21M", e);
                 }
             }
             logger.info("All connection resources released. Program execution completed.");

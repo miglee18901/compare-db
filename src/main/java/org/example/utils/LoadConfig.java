@@ -39,13 +39,13 @@ public class LoadConfig {
         try {
             mode = Integer.parseInt(props.getProperty("MODE", "1").trim());
         } catch (NumberFormatException e) {
-            logger.warn("Invalid MODE configuration value. Using default MODE = 1");
+            logger.error("Invalid MODE configuration value. Using default MODE = 1");
         }
 
         try {
             batchSize = Integer.parseInt(props.getProperty("BATCH_SIZE", "1000").trim());
         } catch (NumberFormatException e) {
-            logger.warn("Invalid BATCH_SIZE configuration value. Using default BATCH_SIZE = 1000");
+            logger.error("Invalid BATCH_SIZE configuration value. Using default BATCH_SIZE = 1000");
         }
 
         String pathVal = props.getProperty("PATH_STATISTICS_FILE");
