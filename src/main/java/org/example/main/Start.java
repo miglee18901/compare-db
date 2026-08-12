@@ -2,6 +2,7 @@ package org.example;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.LoggerContext;
 import org.example.compare.DbComparator;
 import org.example.model.TableConfig;
 import org.example.utils.DbHelper;
@@ -20,11 +21,16 @@ import java.util.Date;
 import java.util.List;
 
 public class Main {
-    private static final Logger logger = LogManager.getLogger(Main.class);
     private static final File ETC_DIRECTORY = new File("etc");
+
+    private static final Logger logger = LogManager.getLogger(Main.class);
 
     public static void main(String[] args) {
         logger.info("Starting Compare DB application...");
+
+        LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
+        File log4j = new File(ETC_DIRECTORY, "log4j2.xml");
+        ctx.setConfigLocation(log4j.toURI());
 
         LoadConfig config = new LoadConfig();
         if (!config.isLoadedSuccessfully()) {
@@ -46,7 +52,6 @@ public class Main {
         String resultFileName = "result_" + timestamp + ".txt";
         File resultFile = new File(outputDir, resultFileName);
 
-        // 2. Read tables list from etc/tableList.txt
         List<TableConfig> tableConfigs = new ArrayList<>();
         File tableListFile = new File(ETC_DIRECTORY, "tableList.txt");
         if (!tableListFile.exists()) {
@@ -101,7 +106,6 @@ public class Main {
                 logger.info("Database validation results written successfully.");
             }
 
-            System.out.println("PATH_STATISTICS_FILE: " + resultFile.getAbsolutePath());
             logger.info("Result file path: {}", resultFile.getAbsolutePath());
 
         } catch (Exception e) {
@@ -111,7 +115,6 @@ public class Main {
                 errorReport.add("Comparison process failed due to system error:");
                 errorReport.add(e.toString());
                 Files.write(resultFile.toPath(), errorReport, StandardCharsets.UTF_8);
-                System.out.println("PATH_STATISTICS_FILE: " + resultFile.getAbsolutePath());
             } catch (IOException ex) {
                 logger.error("Unable to write error report file: ", ex);
             }
