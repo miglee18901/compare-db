@@ -151,7 +151,7 @@ Quy tắc:
 
 ## Chạy ứng dụng
 
-Cách thuận tiện nhất là mở project trong IntelliJ IDEA, chọn JDK 11, tải các dependency Maven, sau đó chạy class `org.example.Main`.
+Cách thuận tiện nhất là mở project trong IntelliJ IDEA, chọn JDK 11, tải các dependency Maven, sau đó chạy class `org.example.main.Start`.
 
 Working directory phải là thư mục gốc repository. Trước khi chạy, cấu trúc tối thiểu cần có là:
 

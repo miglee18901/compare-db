@@ -16,7 +16,7 @@ mvn test                 # Chạy test JUnit 5
 mvn package              # Biên dịch, chạy test và đóng gói
 ```
 
-Project dùng Java 11, Hibernate 3.1.3, MySQL Connector/J 5.1.49, Log4j2 và JUnit 5. Nếu `mvn` chưa có trong PATH, dùng Maven đi kèm IntelliJ. Chạy `org.example.Main` trên IntelliJ sau khi kiểm tra hai file cấu hình database và `tableList.txt`. Kết quả được ghi vào thư mục `result/` đã cấu hình.
+Project dùng Java 11, Hibernate 3.1.3, MySQL Connector/J 5.1.49, Log4j2 và JUnit 5. Nếu `mvn` chưa có trong PATH, dùng Maven đi kèm IntelliJ. Chạy `org.example.main.Start` trên IntelliJ sau khi kiểm tra hai file cấu hình database và `tableList.txt`. Kết quả được ghi vào thư mục `result/` đã cấu hình.
 
 ## Quy ước Code & Đặt tên
 

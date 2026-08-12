@@ -1,4 +1,4 @@
-package org.example;
+package org.example.main;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -20,19 +20,23 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-public class Main {
-    private static final File ETC_DIRECTORY = new File("etc");
+public class Start {
+    private static final Logger logger = LogManager.getLogger(Start.class);
 
-    private static final Logger logger = LogManager.getLogger(Main.class);
+    private static final String PATH_LOG4J2 = "../etc/log4j2.xml";
+    private static final String PATH_CONFIG = "../etc/config.properties";
+    private static final String PATH_TABLE_LIST = "../etc/tableList.txt";
+    private static final String PATH_CFG_16M = "../etc/hibernate_mysql_crbt16m.cfg.xml";
+    private static final String PATH_CFG_21M = "../etc/hibernate_mysql_crbt21m.cfg.xml";
 
     public static void main(String[] args) {
         logger.info("Starting Compare DB application...");
 
         LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
-        File log4j = new File(ETC_DIRECTORY, "log4j2.xml");
+        File log4j = new File(PATH_LOG4J2);
         ctx.setConfigLocation(log4j.toURI());
 
-        LoadConfig config = new LoadConfig();
+        LoadConfig config = new LoadConfig(PATH_CONFIG);
         if (!config.isLoadedSuccessfully()) {
             return;
         }
@@ -53,7 +57,7 @@ public class Main {
         File resultFile = new File(outputDir, resultFileName);
 
         List<TableConfig> tableConfigs = new ArrayList<>();
-        File tableListFile = new File(ETC_DIRECTORY, "tableList.txt");
+        File tableListFile = new File(PATH_TABLE_LIST);
         if (!tableListFile.exists()) {
             logger.error("Configuration file not found: {}", tableListFile.getAbsolutePath());
             return;
@@ -81,8 +85,8 @@ public class Main {
             return;
         }
 
-        File cfgFile16M = new File(ETC_DIRECTORY, "hibernate_mysql_crbt16m.cfg.xml");
-        File cfgFile21M = new File(ETC_DIRECTORY, "hibernate_mysql_crbt21m.cfg.xml");
+        File cfgFile16M = new File(PATH_CFG_16M);
+        File cfgFile21M = new File(PATH_CFG_21M);
 
         SessionFactory sf16M = null;
         SessionFactory sf21M = null;

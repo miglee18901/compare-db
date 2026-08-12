@@ -16,13 +16,13 @@ public class LoadConfig {
     private String pathStatsFile = "./result/";
     private boolean loadedSuccessfully = false;
 
-    public LoadConfig() {
-        load();
+    public LoadConfig(String pathConfig) {
+        load(pathConfig);
     }
 
-    private void load() {
+    private void load(String pathConfig) {
         Properties props = new Properties();
-        File configFile = new File("etc", "config.properties");
+        File configFile = new File(pathConfig);
         if (!configFile.exists()) {
             logger.error("Configuration file not found: {}", configFile.getAbsolutePath());
             return;
