@@ -44,10 +44,13 @@ public class TableConfig {
         if (parts.length < 2) {
             throw new IllegalArgumentException("Table configuration line is malformed (needs at least table name and key column): " + line);
         }
+        if (parts.length > 3) {
+            throw new IllegalArgumentException("Table configuration line has too many parts: " + line);
+        }
 
         String tableName = parts[0].trim();
         String keyColumn = parts[1].trim();
-        
+
         List<String> ignoreColumns = new ArrayList<>();
         if (parts.length > 2 && !parts[2].trim().isEmpty()) {
             String[] cols = parts[2].trim().split(",");

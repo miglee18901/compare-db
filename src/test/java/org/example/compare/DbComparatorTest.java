@@ -218,7 +218,7 @@ public class DbComparatorTest {
         // Table not exist
         TableConfig invalidTable = TableConfig.parse("NON_EXISTENT|ID|");
         List<String> report1 = DbComparator.compare(session16M, session21M, Arrays.asList(invalidTable), 1, 1000);
-        assertTrue(report1.isEmpty());
+        assertEquals(Arrays.asList("TABLE = NON_EXISTENT, CRBT16M = <does not exist>, CRBT21M = <does not exist>"), report1);
 
         // Key column not in table
         TableConfig invalidKey = TableConfig.parse("SUBS_INFO|NOT_EXISTENT|");
@@ -239,5 +239,17 @@ public class DbComparatorTest {
         TableConfig ignoreNotExist = TableConfig.parse("SUBS_INFO|MSISDN|UNKNOWN_FIELD");
         List<String> report5 = DbComparator.compare(session16M, session21M, Arrays.asList(ignoreNotExist), 1, 1000);
         assertTrue(report5.isEmpty());
+    }
+    @Test
+    public void testMissingTableIsReportedInBothModes() throws Exception {
+        try (Statement sm = session16M.connection().createStatement()) {
+            sm.execute("CREATE TABLE ONLY_IN_CRBT16M (ID INT PRIMARY KEY)");
+        }
+
+        TableConfig config = TableConfig.parse("ONLY_IN_CRBT16M|ID|");
+        String expected = "TABLE = ONLY_IN_CRBT16M, CRBT21M = <does not exist>";
+
+        assertEquals(Arrays.asList(expected), DbComparator.compare(session16M, session21M, Arrays.asList(config), 1, 1000));
+        assertEquals(Arrays.asList(expected), DbComparator.compare(session16M, session21M, Arrays.asList(config), 2, 1000));
     }
 }

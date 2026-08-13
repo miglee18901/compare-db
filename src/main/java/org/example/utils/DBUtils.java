@@ -1,16 +1,18 @@
 package org.example.utils;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.example.compare.TableMetadata;
 import org.hibernate.Session;
+import org.owasp.encoder.Encode;
 
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class DBUtils {
+
+    private static final Logger logger = LogManager.getLogger(DBUtils.class);
 
     public static long getRecordCount(Session session, String tableName) {
         Connection connection = session.connection();
@@ -27,15 +29,21 @@ public class DBUtils {
         }
     }
 
-    public static List<Object[]> fetchDataBatch(Session session, String tableName, List<String> selectColumns, String keyColumn, long offset, int limit) {
+    public static List<Object[]> fetchDataBatch(Session session, String environment, String tableName, List<String> selectColumns, String keyColumn, long offset, int limit) {
+        logger.debug("Fetching data batch from environment: {}, table: {}, offset: {}, limit: {}", environment, tableName, offset, limit);
         Connection connection = session.connection();
         List<Object[]> batch = new ArrayList<>();
-        String sql = "SELECT " + String.join(", ", selectColumns)
-                + " FROM " + tableName
-                + " ORDER BY " + keyColumn + " ASC"
-                + " LIMIT ? OFFSET ?";
+        String safeTable = quoteIdentifier(connection, tableName);
+        String safeKeyColumn = quoteIdentifier(connection, keyColumn);
+        List<String> safeColumns = new ArrayList<>();
+        for (String column : selectColumns) {
+            safeColumns.add(quoteIdentifier(connection, column));
+        }
+        String safeColumnList = String.join(", ", safeColumns);
+        String sql = "SELECT " + safeColumnList + " FROM " + safeTable + " ORDER BY " + safeKeyColumn + " ASC LIMIT ? OFFSET ?";
 
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        logger.debug("Executing SQL in environment {}: {}", environment, sql);
+        try (PreparedStatement statement = connection.prepareStatement(Encode.forHtml(sql))) {
             statement.setInt(1, limit);
             statement.setLong(2, offset);
 
@@ -52,6 +60,26 @@ public class DBUtils {
             return batch;
         } catch (Exception e) {
             throw new IllegalStateException("Unable to read data from table: " + tableName, e);
+        }
+    }
+
+    private static String validateIdentifier(String identifier) {
+        if (identifier == null || !identifier.matches("[A-Za-z_][A-Za-z0-9_]*")) {
+            throw new IllegalArgumentException("Invalid SQL identifier");
+        }
+        return identifier;
+    }
+
+    private static String quoteIdentifier(Connection connection, String identifier) {
+        String safe = validateIdentifier(identifier);
+        try {
+            String quote = connection.getMetaData().getIdentifierQuoteString();
+            if (quote == null || quote.trim().isEmpty()) {
+                return safe;
+            }
+            return quote + safe + quote;
+        } catch (SQLException e) {
+            throw new IllegalStateException("Unable to quote identifier: " + identifier, e);
         }
     }
 

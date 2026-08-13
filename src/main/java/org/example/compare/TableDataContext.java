@@ -7,6 +7,7 @@ import java.util.List;
 
 public class TableDataContext {
     private final Session session;
+    private final String environment;
     private final String tableName;
     private final String keyColumn;
     private final List<String> selectColumns;
@@ -17,8 +18,9 @@ public class TableDataContext {
     private long index = 0;
     private boolean hasMore = true;
 
-    public TableDataContext(Session session, String tableName, String keyColumn, List<String> compareColumns, int batchSize) {
+    public TableDataContext(Session session, String environment, String tableName, String keyColumn, List<String> compareColumns, int batchSize) {
         this.session = session;
+        this.environment = environment;
         this.tableName = tableName;
         this.keyColumn = keyColumn.toUpperCase();
         this.selectColumns = new ArrayList<>();
@@ -48,7 +50,7 @@ public class TableDataContext {
 
     private void fetchNextBatch() {
         List<Object[]> batch = DBUtils.fetchDataBatch(
-            session, tableName, selectColumns, keyColumn, index, batchSize
+            session, environment, tableName, selectColumns, keyColumn, index, batchSize
         );
         currentBatch.clear();
         currentBatch.addAll(batch);

@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -48,13 +49,15 @@ public class Start {
         if (!outputDir.exists()) {
             boolean created = outputDir.mkdirs();
             if (created) {
-                logger.info("Created result directory: {}", outputDir.getAbsolutePath());
+                logger.debug("Created result directory: {}", outputDir.getAbsolutePath());
             }
         }
+        String absoluteOutputPath = Paths.get(config.getPathStatsFile()).toAbsolutePath().normalize().toString();
+        File absoluteOutputDir = new File(absoluteOutputPath);
 
         String timestamp = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
         String resultFileName = "result_" + timestamp + ".txt";
-        File resultFile = new File(outputDir, resultFileName);
+        File resultFile = new File(absoluteOutputDir, resultFileName);
 
         List<TableConfig> tableConfigs = new ArrayList<>();
         File tableListFile = new File(PATH_TABLE_LIST);
@@ -62,8 +65,9 @@ public class Start {
             logger.error("Configuration file not found: {}", tableListFile.getAbsolutePath());
             return;
         }
-
-        try (BufferedReader br = Files.newBufferedReader(tableListFile.toPath(), StandardCharsets.UTF_8)) {
+        String absoluteTableListPath = Paths.get(PATH_TABLE_LIST).toAbsolutePath().normalize().toString();
+        File absoluteTableListFile = new File(absoluteTableListPath);
+        try (BufferedReader br = Files.newBufferedReader(absoluteTableListFile.toPath(), StandardCharsets.UTF_8)) {
             String line;
             while ((line = br.readLine()) != null) {
                 try {
@@ -94,11 +98,11 @@ public class Start {
         Session session21M = null;
 
         try {
-            logger.info("Connecting to database CRBT16M...");
+            logger.debug("Connecting to database CRBT16M...");
             sf16M = DbHelper.buildSessionFactory(cfgFile16M, null);
             session16M = sf16M.openSession();
 
-            logger.info("Connecting to database CRBT21M...");
+            logger.debug("Connecting to database CRBT21M...");
             sf21M = DbHelper.buildSessionFactory(cfgFile21M, null);
             session21M = sf21M.openSession();
 
@@ -108,9 +112,8 @@ public class Start {
             if (!report.isEmpty()) {
                 Files.write(resultFile.toPath(), report, StandardCharsets.UTF_8);
                 logger.info("Database validation results written successfully.");
+                logger.info("Result file path: {}", resultFile.getAbsolutePath());
             }
-
-            logger.info("Result file path: {}", resultFile.getAbsolutePath());
 
         } catch (Exception e) {
             logger.error("An error occurred during comparison: ", e);
@@ -119,6 +122,7 @@ public class Start {
                 errorReport.add("Comparison process failed due to system error:");
                 errorReport.add(e.toString());
                 Files.write(resultFile.toPath(), errorReport, StandardCharsets.UTF_8);
+                logger.info("Error report written to: {}", resultFile.getAbsolutePath());
             } catch (IOException ex) {
                 logger.error("Unable to write error report file: ", ex);
             }

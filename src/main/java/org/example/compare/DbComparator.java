@@ -32,14 +32,17 @@ public class DbComparator {
                 }
                 if (hasError) {
                     logger.error("Table {} does not exist in one of the environments. Skipping comparison for this table.", config.getTableName());
+                    reportLines.add(createMissingTableReport(config.getTableName(), meta1, meta2));
                     continue;
                 }
 
                 String keyCol = config.getKeyColumn().toUpperCase();
                 if (!meta1.getColumns().contains(keyCol)) {
+                    logger.error("Key column {} does not exist in table {} in CRBT16M. Skipping comparison for this table.", keyCol, config.getTableName());
                     hasError = true;
                 }
                 if (!meta2.getColumns().contains(keyCol)) {
+                    logger.error("Key column {} does not exist in table {} in CRBT21M. Skipping comparison for this table.", keyCol, config.getTableName());
                     hasError = true;
                 }
 
@@ -47,21 +50,26 @@ public class DbComparator {
                 boolean isKey2Valid = meta2.getPrimaryKeys().contains(keyCol) || meta2.getUniqueKeys().contains(keyCol);
 
                 if (!isKey1Valid) {
+                    logger.error("Key column {} is not a primary or unique key in table {} in CRBT16M. Skipping comparison for this table.", keyCol, config.getTableName());
                     hasError = true;
                 }
                 if (!isKey2Valid) {
+                    logger.error("Key column {} is not a primary or unique key in table {} in CRBT21M. Skipping comparison for this table.", keyCol, config.getTableName());
                     hasError = true;
                 }
 
                 for (String ignoreCol : config.getIgnoreColumns()) {
                     String icUpper = ignoreCol.toUpperCase();
                     if (icUpper.equals(keyCol)) {
+                        logger.error("Ignore column {} is the same as the key column {} in table {}. Skipping comparison for this table.", ignoreCol, keyCol, config.getTableName());
                         hasError = true;
                     }
                     if (!meta1.getColumns().contains(icUpper)) {
+                        logger.error("Ignore column {} does not exist in table {} in CRBT16M. Skipping comparison for this table.", ignoreCol, config.getTableName());
                         hasError = true;
                     }
                     if (!meta2.getColumns().contains(icUpper)) {
+                        logger.error("Ignore column {} does not exist in table {} in CRBT21M. Skipping comparison for this table.", ignoreCol, config.getTableName());
                         hasError = true;
                     }
                 }
@@ -74,13 +82,10 @@ public class DbComparator {
                 logger.info("Starting detailed data comparison for table: {}", config.getTableName());
                 TableCompareResult tblResult = compareTableData(session1, session2, config, meta1, meta2, batchSize);
                 results.add(tblResult);
-
-
             }
 
             for (TableCompareResult r : results) {
-                reportLines.add(String.format("TABLE = %s, TOTAL = %d, MATCH = %d, NOT_MATCH = %d",
-                        r.getTableName(), r.getTotal(), r.getMatch(), r.getNotMatch()));
+                reportLines.add(String.format("TABLE = %s, TOTAL = %d, MATCH = %d, NOT_MATCH = %d", r.getTableName(), r.getTotal(), r.getMatch(), r.getNotMatch()));
             }
 
             if (!reportLines.isEmpty()) {
@@ -88,9 +93,7 @@ public class DbComparator {
             }
 
             for (TableCompareResult r : results) {
-                boolean hasDetails = !r.getMissingColumnsInCrbt16M().isEmpty()
-                        || !r.getMissingColumnsInCrbt21M().isEmpty()
-                        || !r.getDiffDetails().isEmpty();
+                boolean hasDetails = !r.getMissingColumnsInCrbt16M().isEmpty() || !r.getMissingColumnsInCrbt21M().isEmpty() || !r.getDiffDetails().isEmpty();
                 if (!hasDetails) {
                     continue;
                 }
@@ -122,20 +125,31 @@ public class DbComparator {
                 if (!meta2.isExists()) {
                     hasError = true;
                 }
-
                 if (hasError) {
+                    logger.error("Table {} does not exist in one of the environments. Skipping count for this table.", config.getTableName());
+                    reportLines.add(createMissingTableReport(config.getTableName(), meta1, meta2));
                     continue;
                 }
 
                 logger.info("Counting records for table: {}", config.getTableName());
-
                 long count1 = DBUtils.getRecordCount(session1, meta1.getActualTableName());
                 long count2 = DBUtils.getRecordCount(session2, meta2.getActualTableName());
-
                 reportLines.add(String.format("TABLE = %s, CRBT16M = %d, CRBT21M = %d", config.getTableName(), count1, count2));
             }
         }
         return reportLines;
+    }
+
+    private static String createMissingTableReport(String tableName, TableMetadata meta1, TableMetadata meta2) {
+        List<String> reportParts = new ArrayList<>();
+        reportParts.add("TABLE = " + tableName);
+        if (!meta1.isExists()) {
+            reportParts.add("CRBT16M = <does not exist>");
+        }
+        if (!meta2.isExists()) {
+            reportParts.add("CRBT21M = <does not exist>");
+        }
+        return String.join(", ", reportParts);
     }
 
     private static TableCompareResult compareTableData(Session session1, Session session2, TableConfig config, TableMetadata meta1, TableMetadata meta2, int batchSize) {
@@ -185,8 +199,8 @@ public class DbComparator {
             }
         }
 
-        TableDataContext ctx1 = new TableDataContext(session1, meta1.getActualTableName(), keyCol, compareCols, batchSize);
-        TableDataContext ctx2 = new TableDataContext(session2, meta2.getActualTableName(), keyCol, compareCols, batchSize);
+        TableDataContext ctx1 = new TableDataContext(session1, "CRBT16M", meta1.getActualTableName(), keyCol, compareCols, batchSize);
+        TableDataContext ctx2 = new TableDataContext(session2, "CRBT21M", meta2.getActualTableName(), keyCol, compareCols, batchSize);
 
         while (true) {
             Object[] row1 = ctx1.peek();
