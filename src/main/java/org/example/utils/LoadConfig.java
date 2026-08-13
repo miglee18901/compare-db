@@ -13,6 +13,7 @@ public class LoadConfig {
 
     private int mode = 1;
     private int batchSize = 1000;
+    private int workerThreads = 4;
     private String pathStatsFile = "../result/";
     private boolean loadedSuccessfully = false;
 
@@ -56,6 +57,16 @@ public class LoadConfig {
             logger.error("Invalid BATCH_SIZE configuration value. Using default BATCH_SIZE = 1000");
         }
 
+        try {
+            workerThreads = Integer.parseInt(props.getProperty("WORKER_THREADS", "4").trim());
+            if (workerThreads <= 0) {
+                logger.error("Invalid WORKER_THREADS configuration value. Using default WORKER_THREADS = 4");
+                workerThreads = 4;
+            }
+        } catch (NumberFormatException e) {
+            logger.error("Invalid WORKER_THREADS configuration value. Using default WORKER_THREADS = 4");
+            workerThreads = 4;
+        }
         String pathVal = props.getProperty("PATH_STATISTICS_FILE");
         if (pathVal != null) {
             pathStatsFile = pathVal.trim();
@@ -64,6 +75,7 @@ public class LoadConfig {
         logger.info("Configuration loaded successfully:");
         logger.info("MODE = {}", mode);
         logger.info("BATCH_SIZE = {}", batchSize);
+        logger.info("WORKER_THREADS = {}", workerThreads);
         logger.info("PATH_STATISTICS_FILE = {}", pathStatsFile);
     }
 
@@ -73,6 +85,10 @@ public class LoadConfig {
 
     public int getBatchSize() {
         return batchSize;
+    }
+
+    public int getWorkerThreads() {
+        return workerThreads;
     }
 
     public String getPathStatsFile() {

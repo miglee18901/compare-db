@@ -6,8 +6,10 @@ import org.example.model.TableConfig;
 import org.example.utils.DBUtils;
 import org.example.utils.ProcessUtils;
 import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 
 import java.util.*;
+import java.util.concurrent.*;
 
 public class DbComparator {
     private static final Logger logger = LogManager.getLogger(DbComparator.class);
@@ -138,6 +140,64 @@ public class DbComparator {
             }
         }
         return reportLines;
+    }
+
+    public static List<String> compareInParallel(SessionFactory sessionFactory16M, SessionFactory sessionFactory21M, List<TableConfig> tableConfigs, int mode, int batchSize, int workerThreads) {
+        int poolSize = Math.min(workerThreads, tableConfigs.size());
+        ExecutorService executor = Executors.newFixedThreadPool(poolSize);
+        logger.debug("Starting parallel comparison with {} worker threads for {} tables.", poolSize, tableConfigs.size());
+        try {
+            List<Future<List<String>>> futures = new ArrayList<>();
+            for (TableConfig config : tableConfigs) {
+                futures.add(executor.submit(() -> compareTable(sessionFactory16M, sessionFactory21M, config, mode, batchSize)));
+            }
+
+            List<String> reportLines = new ArrayList<>();
+            for (Future<List<String>> future : futures) {
+                reportLines.addAll(future.get());
+            }
+            return reportLines;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("Comparison was interrupted.", e);
+        } catch (ExecutionException e) {
+            throw new IllegalStateException("Unable to compare table.", e.getCause());
+        } finally {
+            executor.shutdown();
+        }
+    }
+
+    private static List<String> compareTable(SessionFactory sessionFactory16M, SessionFactory sessionFactory21M, TableConfig config, int mode, int batchSize) {
+        logger.info("Starting comparison task for table {}", config.getTableName());
+        Session session16M = null;
+        Session session21M = null;
+        try {
+            session16M = sessionFactory16M.openSession();
+            session21M = sessionFactory21M.openSession();
+            List<String> tableReport = compare(session16M, session21M, Collections.singletonList(config), mode, batchSize);
+            if (tableReport.isEmpty()) {
+                return tableReport;
+            }
+            List<String> formattedReport = new ArrayList<>();
+            formattedReport.add("-------------------------------------------------------------------------------------");
+            formattedReport.addAll(tableReport);
+            return formattedReport;
+        } finally {
+            closeSession(session16M, "CRBT16M", config.getTableName());
+            closeSession(session21M, "CRBT21M", config.getTableName());
+            logger.info("Finished comparison task for table {}", config.getTableName());
+        }
+    }
+
+    private static void closeSession(Session session, String environment, String tableName) {
+        if (session == null) {
+            return;
+        }
+        try {
+            session.close();
+        } catch (Exception e) {
+            logger.error("Unable to close {} session for table {}", environment, tableName, e);
+        }
     }
 
     private static String createMissingTableReport(String tableName, TableMetadata meta1, TableMetadata meta2) {

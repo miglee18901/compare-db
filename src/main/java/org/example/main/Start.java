@@ -7,7 +7,6 @@ import org.example.compare.DbComparator;
 import org.example.model.TableConfig;
 import org.example.utils.DbHelper;
 import org.example.utils.LoadConfig;
-import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 
 import java.io.BufferedReader;
@@ -44,6 +43,7 @@ public class Start {
 
         int mode = config.getMode();
         int batchSize = config.getBatchSize();
+        int workerThreads = config.getWorkerThreads();
 
         File outputDir = new File(config.getPathStatsFile());
         if (!outputDir.exists()) {
@@ -94,20 +94,16 @@ public class Start {
 
         SessionFactory sf16M = null;
         SessionFactory sf21M = null;
-        Session session16M = null;
-        Session session21M = null;
 
         try {
             logger.debug("Connecting to database CRBT16M...");
             sf16M = DbHelper.buildSessionFactory(cfgFile16M, null);
-            session16M = sf16M.openSession();
 
             logger.debug("Connecting to database CRBT21M...");
             sf21M = DbHelper.buildSessionFactory(cfgFile21M, null);
-            session21M = sf21M.openSession();
 
-            logger.info("Starting comparison (Mode = {})...", mode);
-            List<String> report = DbComparator.compare(session16M, session21M, tableConfigs, mode, batchSize);
+            logger.info("Starting parallel comparison (Mode = {}, workers = {})...", mode, workerThreads);
+            List<String> report = DbComparator.compareInParallel(sf16M, sf21M, tableConfigs, mode, batchSize, workerThreads);
 
             if (!report.isEmpty()) {
                 Files.write(resultFile.toPath(), report, StandardCharsets.UTF_8);
@@ -127,20 +123,6 @@ public class Start {
                 logger.error("Unable to write error report file: ", ex);
             }
         } finally {
-            if (session16M != null) {
-                try {
-                    session16M.close();
-                } catch (Exception e) {
-                    logger.error("Error closing session CRBT16M", e);
-                }
-            }
-            if (session21M != null) {
-                try {
-                    session21M.close();
-                } catch (Exception e) {
-                    logger.error("Error closing session CRBT21M", e);
-                }
-            }
             if (sf16M != null) {
                 try {
                     sf16M.close();
