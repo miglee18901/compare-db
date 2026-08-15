@@ -71,7 +71,7 @@ public class Start {
             String line;
             while ((line = br.readLine()) != null) {
                 try {
-                    TableConfig tblConfig = TableConfig.parse(line);
+                    TableConfig tblConfig = TableConfig.parse(line, mode);
                     if (tblConfig != null) {
                         tableConfigs.add(tblConfig);
                     }

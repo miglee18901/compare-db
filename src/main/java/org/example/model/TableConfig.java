@@ -33,7 +33,7 @@ public class TableConfig {
         return rawLine;
     }
 
-    public static TableConfig parse(String line) {
+    public static TableConfig parse(String line, int mode) {
         if (line == null) return null;
         String trimmed = line.trim();
         if (trimmed.isEmpty() || trimmed.startsWith("#")) {
@@ -41,15 +41,19 @@ public class TableConfig {
         }
 
         String[] parts = trimmed.split("\\|", -1);
-        if (parts.length < 2) {
-            throw new IllegalArgumentException("Table configuration line is malformed (needs at least table name and key column): " + line);
-        }
         if (parts.length > 3) {
             throw new IllegalArgumentException("Table configuration line has too many parts: " + line);
         }
 
         String tableName = parts[0].trim();
         String keyColumn = parts[1].trim();
+
+        if ((mode == 1 || mode == 2) && tableName.isEmpty()) {
+            throw new IllegalArgumentException("Table name cannot be empty: " + line);
+        }
+        if (mode == 1 && keyColumn.isEmpty()) {
+            throw new IllegalArgumentException("Comparison key cannot be empty: " + line);
+        }
 
         List<String> ignoreColumns = new ArrayList<>();
         if (parts.length > 2 && !parts[2].trim().isEmpty()) {
@@ -59,13 +63,6 @@ public class TableConfig {
                     ignoreColumns.add(col.trim());
                 }
             }
-        }
-
-        if (tableName.isEmpty()) {
-            throw new IllegalArgumentException("Table name cannot be empty: " + line);
-        }
-        if (keyColumn.isEmpty()) {
-            throw new IllegalArgumentException("Comparison key cannot be empty: " + line);
         }
 
         return new TableConfig(tableName, keyColumn, ignoreColumns, trimmed);
