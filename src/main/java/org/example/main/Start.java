@@ -75,7 +75,7 @@ public class Start {
                     if (tblConfig != null) {
                         tableConfigs.add(tblConfig);
                     }
-                } catch (IllegalArgumentException e) {
+                } catch (Exception e) {
                     logger.error("Skipped malformed line in {}: {}", tableListFile.getPath(), e.getMessage());
                 }
             }
@@ -113,15 +113,6 @@ public class Start {
 
         } catch (Exception e) {
             logger.error("An error occurred during comparison: ", e);
-            try {
-                List<String> errorReport = new ArrayList<>();
-                errorReport.add("Comparison process failed due to system error:");
-                errorReport.add(e.toString());
-                Files.write(resultFile.toPath(), errorReport, StandardCharsets.UTF_8);
-                logger.info("Error report written to: {}", resultFile.getAbsolutePath());
-            } catch (IOException ex) {
-                logger.error("Unable to write error report file: ", ex);
-            }
         } finally {
             if (sf16M != null) {
                 try {

@@ -39,45 +39,62 @@ public class DbComparator {
                 }
 
                 String keyCol = config.getKeyColumn().toUpperCase();
+                List<String> missingKeyEnvironments = new ArrayList<>();
                 if (!meta1.getColumns().contains(keyCol)) {
                     logger.error("Key column {} does not exist in table {} in CRBT16M. Skipping comparison for this table.", keyCol, config.getTableName());
-                    hasError = true;
+                    missingKeyEnvironments.add("CRBT16M");
                 }
                 if (!meta2.getColumns().contains(keyCol)) {
                     logger.error("Key column {} does not exist in table {} in CRBT21M. Skipping comparison for this table.", keyCol, config.getTableName());
-                    hasError = true;
+                    missingKeyEnvironments.add("CRBT21M");
+                }
+                if (!missingKeyEnvironments.isEmpty()) {
+                    reportLines.add(createMissingKeyColumnReport(config.getTableName(), keyCol, missingKeyEnvironments));
+                    continue;
                 }
 
                 boolean isKey1Valid = meta1.getPrimaryKeys().contains(keyCol) || meta1.getUniqueKeys().contains(keyCol);
                 boolean isKey2Valid = meta2.getPrimaryKeys().contains(keyCol) || meta2.getUniqueKeys().contains(keyCol);
-
+                List<String> invalidKeyEnvironments = new ArrayList<>();
                 if (!isKey1Valid) {
                     logger.error("Key column {} is not a primary or unique key in table {} in CRBT16M. Skipping comparison for this table.", keyCol, config.getTableName());
-                    hasError = true;
+                    invalidKeyEnvironments.add("CRBT16M");
                 }
                 if (!isKey2Valid) {
                     logger.error("Key column {} is not a primary or unique key in table {} in CRBT21M. Skipping comparison for this table.", keyCol, config.getTableName());
-                    hasError = true;
+                    invalidKeyEnvironments.add("CRBT21M");
+                }
+                if (!invalidKeyEnvironments.isEmpty()) {
+                    reportLines.add(createInvalidKeyReport(config.getTableName(), keyCol, invalidKeyEnvironments));
+                    continue;
                 }
 
+                boolean hasIgnoreColumnError = false;
                 for (String ignoreCol : config.getIgnoreColumns()) {
                     String icUpper = ignoreCol.toUpperCase();
                     if (icUpper.equals(keyCol)) {
                         logger.error("Ignore column {} is the same as the key column {} in table {}. Skipping comparison for this table.", ignoreCol, keyCol, config.getTableName());
-                        hasError = true;
+                        reportLines.add(createIgnoreColumnMatchesKeyReport(config.getTableName(), keyCol, ignoreCol));
+                        hasIgnoreColumnError = true;
+                        break;
                     }
+
+                    List<String> missingIgnoreEnvironments = new ArrayList<>();
                     if (!meta1.getColumns().contains(icUpper)) {
                         logger.error("Ignore column {} does not exist in table {} in CRBT16M. Skipping comparison for this table.", ignoreCol, config.getTableName());
-                        hasError = true;
+                        missingIgnoreEnvironments.add("CRBT16M");
                     }
                     if (!meta2.getColumns().contains(icUpper)) {
                         logger.error("Ignore column {} does not exist in table {} in CRBT21M. Skipping comparison for this table.", ignoreCol, config.getTableName());
-                        hasError = true;
+                        missingIgnoreEnvironments.add("CRBT21M");
+                    }
+                    if (!missingIgnoreEnvironments.isEmpty()) {
+                        reportLines.add(createMissingIgnoreColumnReport(config.getTableName(), ignoreCol, missingIgnoreEnvironments));
+                        hasIgnoreColumnError = true;
+                        break;
                     }
                 }
-
-                if (hasError) {
-                    logger.error("Table configuration for {} violates validation. Skipping comparison for this table.", config.getTableName());
+                if (hasIgnoreColumnError) {
                     continue;
                 }
 
@@ -208,6 +225,49 @@ public class DbComparator {
         }
         if (!meta2.isExists()) {
             reportParts.add("CRBT21M = <does not exist>");
+        }
+        return String.join(", ", reportParts);
+    }
+
+    private static String createMissingKeyColumnReport(String tableName, String keyColumn, List<String> missingEnvironments) {
+        List<String> reportParts = new ArrayList<>();
+        reportParts.add("TABLE = " + tableName);
+        reportParts.add("KEY = " + keyColumn);
+        for (String environment : missingEnvironments) {
+            reportParts.add(environment + " = <key column does not exist>");
+        }
+        return String.join(", ", reportParts);
+    }
+
+    private static String createIgnoreColumnMatchesKeyReport(String tableName, String keyColumn, String ignoreColumn) {
+        return String.format("TABLE = %s, KEY = %s, IGNORE_COLUMN = %s, ERROR = <ignore column is the same as key column>", tableName, keyColumn, ignoreColumn);
+    }
+
+    private static String createMissingIgnoreColumnReport(String tableName, String ignoreColumn, List<String> missingEnvironments) {
+        List<String> reportParts = new ArrayList<>();
+        reportParts.add("TABLE = " + tableName);
+        reportParts.add("IGNORE_COLUMN = " + ignoreColumn);
+        for (String environment : missingEnvironments) {
+            reportParts.add(environment + " = <ignore column does not exist>");
+        }
+        return String.join(", ", reportParts);
+    }
+    private static String createInvalidKeyReport(String tableName, String keyColumn, List<String> invalidEnvironments) {
+        List<String> reportParts = new ArrayList<>();
+        reportParts.add("TABLE = " + tableName);
+        reportParts.add("KEY = " + keyColumn);
+        for (String environment : invalidEnvironments) {
+            reportParts.add(environment + " = <key is not PRIMARY KEY or UNIQUE KEY>");
+        }
+        return String.join(", ", reportParts);
+    }
+
+    private static String createNotExistKeyReport(String tableName, String keyCol, List<String> notExistKeyEnvironments) {
+        List<String> reportParts = new ArrayList<>();
+        reportParts.add("TABLE = " + tableName);
+        reportParts.add("KEY = " + keyCol);
+        for (String environment : notExistKeyEnvironments) {
+            reportParts.add(environment + " = <key does not exist>");
         }
         return String.join(", ", reportParts);
     }

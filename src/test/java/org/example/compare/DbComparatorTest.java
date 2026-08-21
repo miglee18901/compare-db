@@ -160,6 +160,28 @@ public class DbComparatorTest {
     }
 
     @Test
+    public void testVarcharNumericLookingKeysDoNotCauseCascadingMissingRecords() throws Exception {
+        try (Statement sm = session16M.connection().createStatement()) {
+            sm.execute("INSERT INTO SUBS_INFO VALUES('10', 'T10', 'S10', 'I1', 'I2')");
+            sm.execute("INSERT INTO SUBS_INFO VALUES('100', 'T100', 'S100', 'I1', 'I2')");
+            sm.execute("INSERT INTO SUBS_INFO VALUES('2', 'T2', 'S2', 'I1', 'I2')");
+        }
+        try (Statement sm = session21M.connection().createStatement()) {
+            sm.execute("INSERT INTO SUBS_INFO VALUES('10', 'T10', 'S10', 'I1', 'I2')");
+            sm.execute("INSERT INTO SUBS_INFO VALUES('2', 'T2', 'S2', 'I1', 'I2')");
+        }
+
+        TableConfig config = TableConfig.parse("SUBS_INFO|MSISDN|", 1);
+        List<String> report = DbComparator.compare(session16M, session21M, Arrays.asList(config), 1, 2);
+        String summaryLine = report.stream().filter(l -> l.contains("TABLE = SUBS_INFO")).findFirst().orElse(null);
+
+        assertNotNull(summaryLine);
+        assertTrue(summaryLine.contains("TOTAL = 3"));
+        assertTrue(summaryLine.contains("MATCH = 2"));
+        assertTrue(summaryLine.contains("NOT_MATCH = 1"));
+        assertTrue(report.contains("MSISDN key = 100, CRBT21M = <does not exist>"));
+    }
+    @Test
     public void testMode1UniqueKeyLogic() throws Exception {
         // For PROD_SPEC table, the comparison key is PROD_SPEC_ID (which is a unique key).
         // Since it's a unique key (unikey), we should strip the primary key ('ID') from comparison.
@@ -206,7 +228,7 @@ public class DbComparatorTest {
                 sm.execute("INSERT INTO SUBS_INFO VALUES('3', 'T3', 'S3', 'I1', 'I2')");
         }
 
-        TableConfig config = TableConfig.parse("SUBS_INFO|MSISDN|");
+        TableConfig config = TableConfig.parse("SUBS_INFO|MSISDN|", 1);
         List<String> report = DbComparator.compare(session16M, session21M, Arrays.asList(config), 2, 1000);
 
         assertNotNull(report);

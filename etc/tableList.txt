@@ -1,9 +1,9 @@
 # CompareDB test fixture: main data comparison by primary key.
-11111compare_test|id
+#compare_test|id
 
 # Supporting fixture tables with single-column primary keys.
-compare_test_parent|parent_id
-compare_test_child|child_id|PARENT_CODE
+#compare_test_parent|parent_id
+compare_test_child|child_id
 
 # compare_test_composite_key is intentionally omitted: the current tableList
 # format accepts one key column only, while this fixture tests composite keys.

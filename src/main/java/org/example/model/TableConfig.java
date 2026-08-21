@@ -45,8 +45,8 @@ public class TableConfig {
             throw new IllegalArgumentException("Table configuration line has too many parts: " + line);
         }
 
-        String tableName = parts[0].trim();
-        String keyColumn = parts[1].trim();
+        String tableName = parts.length > 0 ? parts[0].trim() : "";
+        String keyColumn = parts.length > 1 ? parts[1].trim() : "";
 
         if ((mode == 1 || mode == 2) && tableName.isEmpty()) {
             throw new IllegalArgumentException("Table name cannot be empty: " + line);
@@ -56,8 +56,9 @@ public class TableConfig {
         }
 
         List<String> ignoreColumns = new ArrayList<>();
-        if (parts.length > 2 && !parts[2].trim().isEmpty()) {
-            String[] cols = parts[2].trim().split(",");
+        String ignoreColsPart = parts.length > 2 ? parts[2].trim() : "";
+        if (!ignoreColsPart.isEmpty()) {
+            String[] cols = ignoreColsPart.split(",");
             for (String col : cols) {
                 if (!col.trim().isEmpty()) {
                     ignoreColumns.add(col.trim());

@@ -1,16 +1,110 @@
-2026-08-12 17:06:44.946 [main] INFO  o.e.Main:93 - Connecting to database CRBT16M...
-2026-08-12 17:06:45.473 [main] INFO  o.e.Main:97 - Connecting to database CRBT21M...
-2026-08-12 17:06:45.555 [main] INFO  o.e.Main:101 - Starting comparison (Mode = 1)...
-2026-08-12 17:06:45.556 [main] INFO  o.e.c.DbComparator:23 - Checking and validating table configuration: compare_test
-2026-08-12 17:06:45.609 [main] INFO  o.e.c.DbComparator:74 - Starting detailed data comparison for table: compare_test
-2026-08-12 17:06:45.684 [main] INFO  o.e.Main:106 - Database validation results written successfully.
-2026-08-12 17:06:45.684 [main] INFO  o.e.Main:109 - Result file path: C:\Users\admin\Documents\Source java\CompareDB\CompareDB\result\result_20260812170644.txt
-2026-08-12 17:06:45.704 [main] INFO  o.e.Main:150 - All connection resources released. Program execution completed.
-2026-08-12 17:07:26.573 [main] INFO  o.e.Main:93 - Connecting to database CRBT16M...
-2026-08-12 17:07:27.039 [main] INFO  o.e.Main:97 - Connecting to database CRBT21M...
-2026-08-12 17:07:27.097 [main] INFO  o.e.Main:101 - Starting comparison (Mode = 1)...
-2026-08-12 17:07:27.098 [main] INFO  o.e.c.DbComparator:23 - Checking and validating table configuration: compare_test
-2026-08-12 17:07:27.147 [main] INFO  o.e.c.DbComparator:74 - Starting detailed data comparison for table: compare_test
-2026-08-12 17:07:27.225 [main] INFO  o.e.Main:106 - Database validation results written successfully.
-2026-08-12 17:07:27.225 [main] INFO  o.e.Main:109 - Result file path: C:\Users\admin\Documents\Source java\CompareDB\CompareDB\result\result_20260812170726.txt
-2026-08-12 17:07:27.246 [main] INFO  o.e.Main:150 - All connection resources released. Program execution completed.
+2026-08-19 10:52:02.233 [main] INFO  o.e.u.LoadConfig:75 - Configuration loaded successfully:
+2026-08-19 10:52:02.246 [main] INFO  o.e.u.LoadConfig:76 - MODE = 1
+2026-08-19 10:52:02.247 [main] INFO  o.e.u.LoadConfig:77 - BATCH_SIZE = 1000
+2026-08-19 10:52:02.247 [main] INFO  o.e.u.LoadConfig:78 - WORKER_THREADS = 4
+2026-08-19 10:52:02.248 [main] INFO  o.e.u.LoadConfig:79 - PATH_STATISTICS_FILE = result
+2026-08-19 10:52:02.250 [main] DEBUG o.e.m.Start:99 - Connecting to database CRBT16M...
+2026-08-19 10:52:02.786 [main] DEBUG o.e.m.Start:102 - Connecting to database CRBT21M...
+2026-08-19 10:52:02.836 [main] INFO  o.e.m.Start:105 - Starting parallel comparison (Mode = 1, workers = 4)...
+2026-08-19 10:52:02.838 [main] DEBUG o.e.c.DbComparator:148 - Starting parallel comparison with 1 worker threads for 1 tables.
+2026-08-19 10:52:02.841 [pool-2-thread-1] INFO  o.e.c.DbComparator:171 - Starting comparison task for table compare_test_child
+2026-08-19 10:52:02.864 [pool-2-thread-1] INFO  o.e.c.DbComparator:25 - Checking and validating table configuration: compare_test_child
+2026-08-19 10:52:02.921 [pool-2-thread-1] ERROR o.e.c.DbComparator:74 - Ignore column PARENT_CODE does not exist in table compare_test_child in CRBT21M. Skipping comparison for this table.
+2026-08-19 10:52:02.921 [pool-2-thread-1] ERROR o.e.c.DbComparator:80 - Table configuration for compare_test_child violates validation. Skipping comparison for this table.
+2026-08-19 10:52:02.926 [pool-2-thread-1] INFO  o.e.c.DbComparator:188 - Finished comparison task for table compare_test_child
+2026-08-19 10:52:02.939 [main] INFO  o.e.m.Start:140 - All connection resources released. Program execution completed.
+2026-08-19 10:52:18.249 [main] INFO  o.e.u.LoadConfig:75 - Configuration loaded successfully:
+2026-08-19 10:52:18.253 [main] INFO  o.e.u.LoadConfig:76 - MODE = 1
+2026-08-19 10:52:18.253 [main] INFO  o.e.u.LoadConfig:77 - BATCH_SIZE = 1000
+2026-08-19 10:52:18.253 [main] INFO  o.e.u.LoadConfig:78 - WORKER_THREADS = 4
+2026-08-19 10:52:18.253 [main] INFO  o.e.u.LoadConfig:79 - PATH_STATISTICS_FILE = result
+2026-08-19 10:52:18.256 [main] DEBUG o.e.m.Start:99 - Connecting to database CRBT16M...
+2026-08-19 10:52:18.764 [main] DEBUG o.e.m.Start:102 - Connecting to database CRBT21M...
+2026-08-19 10:52:18.832 [main] INFO  o.e.m.Start:105 - Starting parallel comparison (Mode = 1, workers = 4)...
+2026-08-19 10:52:18.834 [main] DEBUG o.e.c.DbComparator:148 - Starting parallel comparison with 1 worker threads for 1 tables.
+2026-08-19 10:52:18.837 [pool-2-thread-1] INFO  o.e.c.DbComparator:171 - Starting comparison task for table compare_test_child
+2026-08-19 10:52:18.855 [pool-2-thread-1] INFO  o.e.c.DbComparator:25 - Checking and validating table configuration: compare_test_child
+2026-08-19 10:52:18.903 [pool-2-thread-1] ERROR o.e.c.DbComparator:74 - Ignore column PARENT_CODE does not exist in table compare_test_child in CRBT21M. Skipping comparison for this table.
+2026-08-19 10:52:18.903 [pool-2-thread-1] ERROR o.e.c.DbComparator:80 - Table configuration for compare_test_child violates validation. Skipping comparison for this table.
+2026-08-19 10:52:18.908 [pool-2-thread-1] INFO  o.e.c.DbComparator:188 - Finished comparison task for table compare_test_child
+2026-08-19 10:52:18.920 [main] INFO  o.e.m.Start:140 - All connection resources released. Program execution completed.
+2026-08-19 10:52:52.802 [main] INFO  o.e.u.LoadConfig:75 - Configuration loaded successfully:
+2026-08-19 10:52:52.809 [main] INFO  o.e.u.LoadConfig:76 - MODE = 1
+2026-08-19 10:52:52.809 [main] INFO  o.e.u.LoadConfig:77 - BATCH_SIZE = 1000
+2026-08-19 10:52:52.810 [main] INFO  o.e.u.LoadConfig:78 - WORKER_THREADS = 4
+2026-08-19 10:52:52.810 [main] INFO  o.e.u.LoadConfig:79 - PATH_STATISTICS_FILE = result
+2026-08-19 10:52:52.814 [main] DEBUG o.e.m.Start:99 - Connecting to database CRBT16M...
+2026-08-19 10:52:53.276 [main] DEBUG o.e.m.Start:102 - Connecting to database CRBT21M...
+2026-08-19 10:52:53.327 [main] INFO  o.e.m.Start:105 - Starting parallel comparison (Mode = 1, workers = 4)...
+2026-08-19 10:52:53.329 [main] DEBUG o.e.c.DbComparator:148 - Starting parallel comparison with 1 worker threads for 1 tables.
+2026-08-19 10:52:53.331 [pool-2-thread-1] INFO  o.e.c.DbComparator:171 - Starting comparison task for table compare_test_child
+2026-08-19 10:52:53.350 [pool-2-thread-1] INFO  o.e.c.DbComparator:25 - Checking and validating table configuration: compare_test_child
+2026-08-19 10:52:53.385 [pool-2-thread-1] INFO  o.e.c.DbComparator:84 - Starting detailed data comparison for table: compare_test_child
+2026-08-19 10:52:53.388 [pool-2-thread-1] DEBUG o.e.u.DBUtils:33 - Fetching data batch from environment: CRBT16M, table: compare_test_child, offset: 0, limit: 1000
+2026-08-19 10:52:53.401 [pool-2-thread-1] DEBUG o.e.u.DBUtils:45 - Executing SQL in environment CRBT16M: SELECT `CHILD_ID`, `PARENT_ID`, `CHILD_NAME` FROM `compare_test_child` ORDER BY `CHILD_ID` ASC LIMIT ? OFFSET ?
+2026-08-19 10:52:53.440 [pool-2-thread-1] DEBUG o.e.u.DBUtils:33 - Fetching data batch from environment: CRBT21M, table: compare_test_child, offset: 0, limit: 1000
+2026-08-19 10:52:53.440 [pool-2-thread-1] DEBUG o.e.u.DBUtils:45 - Executing SQL in environment CRBT21M: SELECT `CHILD_ID`, `PARENT_ID`, `CHILD_NAME` FROM `compare_test_child` ORDER BY `CHILD_ID` ASC LIMIT ? OFFSET ?
+2026-08-19 10:52:53.450 [pool-2-thread-1] INFO  o.e.c.DbComparator:188 - Finished comparison task for table compare_test_child
+2026-08-19 10:52:53.452 [main] INFO  o.e.m.Start:110 - Database validation results written successfully.
+2026-08-19 10:52:53.452 [main] INFO  o.e.m.Start:111 - Result file path: C:\Users\admin\Documents\Source java\CompareDB\CompareDB\result\result_20260819105252.txt
+2026-08-19 10:52:53.467 [main] INFO  o.e.m.Start:140 - All connection resources released. Program execution completed.
+2026-08-19 10:53:25.320 [main] INFO  o.e.u.LoadConfig:75 - Configuration loaded successfully:
+2026-08-19 10:53:25.323 [main] INFO  o.e.u.LoadConfig:76 - MODE = 1
+2026-08-19 10:53:25.324 [main] INFO  o.e.u.LoadConfig:77 - BATCH_SIZE = 1000
+2026-08-19 10:53:25.324 [main] INFO  o.e.u.LoadConfig:78 - WORKER_THREADS = 4
+2026-08-19 10:53:25.324 [main] INFO  o.e.u.LoadConfig:79 - PATH_STATISTICS_FILE = result
+2026-08-19 10:53:25.327 [main] DEBUG o.e.m.Start:99 - Connecting to database CRBT16M...
+2026-08-19 10:53:25.789 [main] DEBUG o.e.m.Start:102 - Connecting to database CRBT21M...
+2026-08-19 10:53:25.849 [main] INFO  o.e.m.Start:105 - Starting parallel comparison (Mode = 1, workers = 4)...
+2026-08-19 10:53:25.851 [main] DEBUG o.e.c.DbComparator:148 - Starting parallel comparison with 1 worker threads for 1 tables.
+2026-08-19 10:53:25.853 [pool-2-thread-1] INFO  o.e.c.DbComparator:171 - Starting comparison task for table compare_test_child
+2026-08-19 10:53:25.875 [pool-2-thread-1] INFO  o.e.c.DbComparator:25 - Checking and validating table configuration: compare_test_child
+2026-08-19 10:53:25.911 [pool-2-thread-1] INFO  o.e.c.DbComparator:84 - Starting detailed data comparison for table: compare_test_child
+2026-08-19 10:53:25.912 [pool-2-thread-1] DEBUG o.e.u.DBUtils:33 - Fetching data batch from environment: CRBT16M, table: compare_test_child, offset: 0, limit: 1000
+2026-08-19 10:53:25.924 [pool-2-thread-1] DEBUG o.e.u.DBUtils:45 - Executing SQL in environment CRBT16M: SELECT `CHILD_ID`, `PARENT_ID`, `CHILD_NAME` FROM `compare_test_child` ORDER BY `CHILD_ID` ASC LIMIT ? OFFSET ?
+2026-08-19 10:53:25.961 [pool-2-thread-1] DEBUG o.e.u.DBUtils:33 - Fetching data batch from environment: CRBT21M, table: compare_test_child, offset: 0, limit: 1000
+2026-08-19 10:53:25.962 [pool-2-thread-1] DEBUG o.e.u.DBUtils:45 - Executing SQL in environment CRBT21M: SELECT `CHILD_ID`, `PARENT_ID`, `CHILD_NAME` FROM `compare_test_child` ORDER BY `CHILD_ID` ASC LIMIT ? OFFSET ?
+2026-08-19 10:53:25.969 [pool-2-thread-1] INFO  o.e.c.DbComparator:188 - Finished comparison task for table compare_test_child
+2026-08-19 10:53:25.972 [main] INFO  o.e.m.Start:110 - Database validation results written successfully.
+2026-08-19 10:53:25.972 [main] INFO  o.e.m.Start:111 - Result file path: C:\Users\admin\Documents\Source java\CompareDB\CompareDB\result\result_20260819105325.txt
+2026-08-19 10:53:25.986 [main] INFO  o.e.m.Start:140 - All connection resources released. Program execution completed.
+2026-08-19 10:54:13.668 [main] INFO  o.e.u.LoadConfig:75 - Configuration loaded successfully:
+2026-08-19 10:54:13.672 [main] INFO  o.e.u.LoadConfig:76 - MODE = 1
+2026-08-19 10:54:13.673 [main] INFO  o.e.u.LoadConfig:77 - BATCH_SIZE = 1000
+2026-08-19 10:54:13.673 [main] INFO  o.e.u.LoadConfig:78 - WORKER_THREADS = 4
+2026-08-19 10:54:13.673 [main] INFO  o.e.u.LoadConfig:79 - PATH_STATISTICS_FILE = result
+2026-08-19 10:54:13.678 [main] DEBUG o.e.m.Start:99 - Connecting to database CRBT16M...
+2026-08-19 10:54:14.173 [main] DEBUG o.e.m.Start:102 - Connecting to database CRBT21M...
+2026-08-19 10:54:14.260 [main] INFO  o.e.m.Start:105 - Starting parallel comparison (Mode = 1, workers = 4)...
+2026-08-19 10:54:14.262 [main] DEBUG o.e.c.DbComparator:148 - Starting parallel comparison with 1 worker threads for 1 tables.
+2026-08-19 10:54:14.265 [pool-2-thread-1] INFO  o.e.c.DbComparator:171 - Starting comparison task for table compare_test_child
+2026-08-19 10:54:14.291 [pool-2-thread-1] INFO  o.e.c.DbComparator:25 - Checking and validating table configuration: compare_test_child
+2026-08-19 10:54:14.334 [pool-2-thread-1] INFO  o.e.c.DbComparator:84 - Starting detailed data comparison for table: compare_test_child
+2026-08-19 10:54:14.336 [pool-2-thread-1] DEBUG o.e.u.DBUtils:33 - Fetching data batch from environment: CRBT16M, table: compare_test_child, offset: 0, limit: 1000
+2026-08-19 10:54:14.355 [pool-2-thread-1] DEBUG o.e.u.DBUtils:45 - Executing SQL in environment CRBT16M: SELECT `CHILD_ID`, `PARENT_ID`, `CHILD_NAME` FROM `compare_test_child` ORDER BY `CHILD_ID` ASC LIMIT ? OFFSET ?
+2026-08-19 10:54:14.390 [pool-2-thread-1] DEBUG o.e.u.DBUtils:33 - Fetching data batch from environment: CRBT21M, table: compare_test_child, offset: 0, limit: 1000
+2026-08-19 10:54:14.390 [pool-2-thread-1] DEBUG o.e.u.DBUtils:45 - Executing SQL in environment CRBT21M: SELECT `CHILD_ID`, `PARENT_ID`, `CHILD_NAME` FROM `compare_test_child` ORDER BY `CHILD_ID` ASC LIMIT ? OFFSET ?
+2026-08-19 10:54:14.399 [pool-2-thread-1] INFO  o.e.c.DbComparator:188 - Finished comparison task for table compare_test_child
+2026-08-19 10:54:14.401 [main] INFO  o.e.m.Start:110 - Database validation results written successfully.
+2026-08-19 10:54:14.402 [main] INFO  o.e.m.Start:111 - Result file path: C:\Users\admin\Documents\Source java\CompareDB\CompareDB\result\result_20260819105413.txt
+2026-08-19 10:54:14.416 [main] INFO  o.e.m.Start:140 - All connection resources released. Program execution completed.
+2026-08-19 10:55:23.417 [main] INFO  o.e.u.LoadConfig:75 - Configuration loaded successfully:
+2026-08-19 10:55:23.422 [main] INFO  o.e.u.LoadConfig:76 - MODE = 1
+2026-08-19 10:55:23.422 [main] INFO  o.e.u.LoadConfig:77 - BATCH_SIZE = 1000
+2026-08-19 10:55:23.422 [main] INFO  o.e.u.LoadConfig:78 - WORKER_THREADS = 4
+2026-08-19 10:55:23.422 [main] INFO  o.e.u.LoadConfig:79 - PATH_STATISTICS_FILE = result
+2026-08-19 10:55:23.426 [main] DEBUG o.e.m.Start:99 - Connecting to database CRBT16M...
+2026-08-19 10:55:23.911 [main] DEBUG o.e.m.Start:102 - Connecting to database CRBT21M...
+2026-08-19 10:55:23.962 [main] INFO  o.e.m.Start:105 - Starting parallel comparison (Mode = 1, workers = 4)...
+2026-08-19 10:55:23.964 [main] DEBUG o.e.c.DbComparator:148 - Starting parallel comparison with 1 worker threads for 1 tables.
+2026-08-19 10:55:23.967 [pool-2-thread-1] INFO  o.e.c.DbComparator:171 - Starting comparison task for table compare_test_child
+2026-08-19 10:55:23.989 [pool-2-thread-1] INFO  o.e.c.DbComparator:25 - Checking and validating table configuration: compare_test_child
+2026-08-19 10:55:24.027 [pool-2-thread-1] INFO  o.e.c.DbComparator:84 - Starting detailed data comparison for table: compare_test_child
+2026-08-19 10:55:24.028 [pool-2-thread-1] DEBUG o.e.u.DBUtils:33 - Fetching data batch from environment: CRBT16M, table: compare_test_child, offset: 0, limit: 1000
+2026-08-19 10:55:24.040 [pool-2-thread-1] DEBUG o.e.u.DBUtils:45 - Executing SQL in environment CRBT16M: SELECT `CHILD_ID`, `PARENT_ID`, `CHILD_NAME` FROM `compare_test_child` ORDER BY `CHILD_ID` ASC LIMIT ? OFFSET ?
+2026-08-19 10:55:24.073 [pool-2-thread-1] DEBUG o.e.u.DBUtils:33 - Fetching data batch from environment: CRBT21M, table: compare_test_child, offset: 0, limit: 1000
+2026-08-19 10:55:24.073 [pool-2-thread-1] DEBUG o.e.u.DBUtils:45 - Executing SQL in environment CRBT21M: SELECT `CHILD_ID`, `PARENT_ID`, `CHILD_NAME` FROM `compare_test_child` ORDER BY `CHILD_ID` ASC LIMIT ? OFFSET ?
+2026-08-19 10:55:24.079 [pool-2-thread-1] INFO  o.e.c.DbComparator:188 - Finished comparison task for table compare_test_child
+2026-08-19 10:55:24.081 [main] INFO  o.e.m.Start:110 - Database validation results written successfully.
+2026-08-19 10:55:24.081 [main] INFO  o.e.m.Start:111 - Result file path: C:\Users\admin\Documents\Source java\CompareDB\CompareDB\result\result_20260819105523.txt
+2026-08-19 10:55:24.091 [main] INFO  o.e.m.Start:140 - All connection resources released. Program execution completed.
